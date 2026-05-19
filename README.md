@@ -8,7 +8,7 @@ patrocinadores — inclusive um patrocinador por jogo.
 ## Stack
 
 - **Next.js 14** (App Router) + **TypeScript**
-- **Prisma** + **SQLite** (sem serviços externos)
+- **Prisma** + **PostgreSQL** (via Docker Compose)
 - **Tailwind CSS**
 - Autenticação por **JWT** em cookie httpOnly (`jose` + `bcryptjs`)
 
@@ -39,13 +39,23 @@ fechamento e fica em destaque na última hora.
 - **Painel admin** para lançar resultados (recalcula o ranking
   automaticamente) e atribuir patrocinador a cada jogo.
 
-## Como rodar
+## Como rodar (local com Docker)
+
+Pré-requisitos: Node 20+, Docker e Docker Compose.
 
 ```bash
+cp .env.example .env          # ajuste o JWT_SECRET se quiser
 npm install
-npm run setup     # gera o Prisma client, cria o banco e popula os dados
-npm run dev       # http://localhost:3000
+npm run db:up                 # sobe o Postgres (docker-compose.yml)
+npm run setup                 # gera o client, cria o schema e popula os dados
+npm run dev                   # http://localhost:3000
 ```
+
+Para parar o banco: `npm run db:down` (os dados ficam no volume
+`bolao-pgdata`; para zerar tudo, use `docker compose down -v`).
+
+O banco roda em `localhost:5432` (usuário `bolao`, senha `bolao`,
+database `bolao`) — já configurado no `.env.example`.
 
 ### Contas de teste (criadas pelo seed)
 
@@ -57,13 +67,14 @@ npm run dev       # http://localhost:3000
 ## Variáveis de ambiente (`.env`)
 
 ```
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="postgresql://bolao:bolao@localhost:5432/bolao?schema=public"
 JWT_SECRET="defina-um-segredo-forte-em-producao"
 ```
 
 ## Estrutura
 
 ```
+docker-compose.yml     serviço Postgres 16 para desenvolvimento local
 prisma/
   schema.prisma        modelos User, Team, Match, Prediction, Sponsor
   seed.ts              48 seleções, 12 grupos, jogos, patrocinadores, admin

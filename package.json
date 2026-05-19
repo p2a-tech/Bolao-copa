@@ -9,6 +9,8 @@
     "lint": "next lint",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
     "setup": "prisma generate && prisma db push && tsx prisma/seed.ts"
   },
   "prisma": {
