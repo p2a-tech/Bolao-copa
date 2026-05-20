@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Countdown } from "./Countdown";
 import { SponsorBanner } from "./SponsorBanner";
-import { flagEmoji } from "@/lib/flags";
+import { Flag } from "./Flag";
 
 export type MatchCardData = {
   id: string;
@@ -33,7 +34,13 @@ function kickoffLabel(iso: string) {
   });
 }
 
-export function MatchCard({ data }: { data: MatchCardData }) {
+export function MatchCard({
+  data,
+  tenantSlug,
+}: {
+  data: MatchCardData;
+  tenantSlug: string;
+}) {
   const kickoff = new Date(data.kickoffISO).getTime();
   const lockAt = kickoff - LOCK_MINUTES * 60 * 1000;
   const locked = data.finished || Date.now() >= lockAt;
@@ -125,17 +132,18 @@ export function MatchCard({ data }: { data: MatchCardData }) {
 
   return (
     <div className="card overflow-hidden">
-      <div className="flex items-center justify-between bg-slate-50 px-4 py-2 text-xs font-medium text-slate-500">
+      <Link
+        href={`/${tenantSlug}/jogo/${data.id}`}
+        className="flex items-center justify-between bg-slate-50 px-4 py-2 text-xs font-medium text-slate-500 transition hover:bg-slate-100"
+      >
         <span>{data.stage}</span>
         <span>{kickoffLabel(data.kickoffISO)}</span>
-      </div>
+      </Link>
 
       <div className="px-4 py-4">
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
           <div className="flex flex-col items-center text-center">
-            <span className="text-4xl leading-none">
-              {flagEmoji(data.home.code)}
-            </span>
+            <Flag code={data.home.code} name={data.home.name} width={52} />
             <span className="mt-1 text-sm font-semibold">
               {data.home.name}
             </span>
@@ -162,9 +170,7 @@ export function MatchCard({ data }: { data: MatchCardData }) {
           </div>
 
           <div className="flex flex-col items-center text-center">
-            <span className="text-4xl leading-none">
-              {flagEmoji(data.away.code)}
-            </span>
+            <Flag code={data.away.code} name={data.away.name} width={52} />
             <span className="mt-1 text-sm font-semibold">
               {data.away.name}
             </span>
@@ -181,6 +187,13 @@ export function MatchCard({ data }: { data: MatchCardData }) {
             lockMinutes={LOCK_MINUTES}
           />
         </div>
+
+        <Link
+          href={`/${tenantSlug}/jogo/${data.id}`}
+          className="mt-3 flex w-full items-center justify-center gap-1 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+        >
+          Acompanhar ao vivo →
+        </Link>
 
         {data.finished && data.points !== null && (
           <div

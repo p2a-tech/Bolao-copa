@@ -12,6 +12,9 @@ export type SessionUser = {
   name: string;
   email: string;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
+  tenantId: string | null;
+  tenantSlug: string | null;
 };
 
 export async function hashPassword(plain: string): Promise<string> {
@@ -57,6 +60,9 @@ export async function getSession(): Promise<SessionUser | null> {
       name: payload.name as string,
       email: payload.email as string,
       isAdmin: Boolean(payload.isAdmin),
+      isSuperAdmin: Boolean(payload.isSuperAdmin),
+      tenantId: (payload.tenantId as string | null) ?? null,
+      tenantSlug: (payload.tenantSlug as string | null) ?? null,
     };
   } catch {
     return null;

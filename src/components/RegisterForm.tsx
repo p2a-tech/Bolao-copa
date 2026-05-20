@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatCPF, formatPhone } from "@/lib/validation";
 
-export function RegisterForm() {
+export function RegisterForm({ tenantSlug }: { tenantSlug: string }) {
   const router = useRouter();
   const [form, setForm] = useState({
     fullName: "",
@@ -30,7 +30,7 @@ export function RegisterForm() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, tenantSlug }),
       });
       const json = await res.json();
       if (!res.ok) {
@@ -38,7 +38,7 @@ export function RegisterForm() {
         setLoading(false);
         return;
       }
-      router.push("/palpites");
+      router.push(`/${tenantSlug}/palpites`);
       router.refresh();
     } catch {
       setError("Falha de conexão.");
@@ -151,7 +151,7 @@ export function RegisterForm() {
 
       <p className="text-center text-sm text-slate-500">
         Já tem conta?{" "}
-        <Link href="/login" className="font-semibold text-brand">
+        <Link href={`/${tenantSlug}/login`} className="font-semibold text-brand">
           Entrar
         </Link>
       </p>

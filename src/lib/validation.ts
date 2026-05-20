@@ -82,3 +82,15 @@ export const predictionSchema = z.object({
   homeScore: z.number().int().min(0).max(99),
   awayScore: z.number().int().min(0).max(99),
 });
+
+export const sponsorSchema = z.object({
+  name: z.string().trim().min(2, "Informe o nome do patrocinador"),
+  logoUrl: z.string().trim().url("URL do logo inválida"),
+  linkUrl: z
+    .string()
+    .trim()
+    .url("Link inválido")
+    .optional()
+    .or(z.literal("")),
+  placement: z.enum(["global", "match"]).default("match"),
+});

@@ -4,7 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-export function LoginForm({ next }: { next: string }) {
+export function LoginForm({
+  tenantSlug,
+  next,
+}: {
+  tenantSlug?: string;
+  next: string;
+}) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -16,10 +22,12 @@ export function LoginForm({ next }: { next: string }) {
     setError("");
     setLoading(true);
     try {
+      const body: Record<string, string> = { email, password };
+      if (tenantSlug) body.tenantSlug = tenantSlug;
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(body),
       });
       const json = await res.json();
       if (!res.ok) {
@@ -27,7 +35,7 @@ export function LoginForm({ next }: { next: string }) {
         setLoading(false);
         return;
       }
-      router.push(next || "/palpites");
+      router.push(next || (tenantSlug ? `/${tenantSlug}/palpites` : "/superadmin"));
       router.refresh();
     } catch {
       setError("Falha de conexão.");
@@ -76,12 +84,17 @@ export function LoginForm({ next }: { next: string }) {
         {loading ? "Entrando..." : "Entrar"}
       </button>
 
-      <p className="text-center text-sm text-slate-500">
-        Não tem conta?{" "}
-        <Link href="/register" className="font-semibold text-brand">
-          Cadastre-se
-        </Link>
-      </p>
+      {tenantSlug && (
+        <p className="text-center text-sm text-slate-500">
+          Não tem conta?{" "}
+          <Link
+            href={`/${tenantSlug}/register`}
+            className="font-semibold text-brand"
+          >
+            Cadastre-se
+          </Link>
+        </p>
+      )}
     </form>
   );
 }

@@ -25,12 +25,23 @@ export function Countdown({
   const kickoff = new Date(kickoffISO).getTime();
   const lockAt = kickoff - lockMinutes * 60 * 1000;
 
-  const [now, setNow] = useState(() => Date.now());
+  // Start null so server HTML and the first client render match (no time
+  // value yet). The real countdown only renders after mount on the client.
+  const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
+    setNow(Date.now());
     const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
   }, []);
+
+  if (now === null) {
+    return (
+      <div className="rounded-lg bg-slate-100 px-3 py-2 text-center text-sm font-medium text-slate-400">
+        ⏱️ Calculando…
+      </div>
+    );
+  }
 
   if (now >= kickoff) {
     return (

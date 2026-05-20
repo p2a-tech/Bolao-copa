@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validation";
 import {
@@ -7,9 +8,13 @@ import {
   setSessionCookie,
 } from "@/lib/auth";
 
+const schema = registerSchema.extend({
+  tenantSlug: z.string().min(1, "Bolão inválido"),
+});
+
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
-  const parsed = registerSchema.safeParse(body);
+  const parsed = schema.safeParse(body);
 
   if (!parsed.success) {
     return NextResponse.json(
@@ -18,7 +23,18 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { fullName, phone, email, birthDate, cpf, password } = parsed.data;
+  const { fullName, phone, email, birthDate, cpf, password, tenantSlug } =
+    parsed.data;
+
+  const tenant = await prisma.tenant.findUnique({
+    where: { slug: tenantSlug },
+  });
+  if (!tenant || !tenant.active) {
+    return NextResponse.json(
+      { error: "Bolão não encontrado." },
+      { status: 404 }
+    );
+  }
 
   const existing = await prisma.user.findFirst({
     where: { OR: [{ email }, { cpf }] },
@@ -32,6 +48,7 @@ export async function POST(req: NextRequest) {
 
   const user = await prisma.user.create({
     data: {
+      tenantId: tenant.id,
       fullName,
       phone,
       email,
@@ -46,8 +63,11 @@ export async function POST(req: NextRequest) {
     name: user.fullName,
     email: user.email,
     isAdmin: user.isAdmin,
+    isSuperAdmin: false,
+    tenantId: tenant.id,
+    tenantSlug: tenant.slug,
   });
   await setSessionCookie(token);
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, tenantSlug: tenant.slug });
 }

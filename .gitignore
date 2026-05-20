@@ -9,3 +9,7 @@ prisma/*.db
 prisma/*.db-journal
 .DS_Store
 next-env.d.ts
+tsconfig.tsbuildinfo
+.claude/
+# hero images geradas (gpt-image-2) — pesadas; reusar via npm run images:hero
+/public/teams/

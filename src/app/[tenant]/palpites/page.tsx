@@ -1,5 +1,7 @@
+import { notFound, redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getTenantBySlug } from "@/lib/tenant";
 import { Nav } from "@/components/Nav";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { MatchCard, type MatchCardData } from "@/components/MatchCard";
@@ -14,26 +16,47 @@ function dayKey(d: Date) {
   });
 }
 
-export default async function PalpitesPage() {
-  const session = (await getSession())!;
+export default async function PalpitesPage({
+  params,
+}: {
+  params: { tenant: string };
+}) {
+  const tenant = await getTenantBySlug(params.tenant);
+  if (!tenant) notFound();
 
-  const [matches, predictions, masterSponsor, totalPoints] = await Promise.all([
-    prisma.match.findMany({
-      orderBy: { kickoff: "asc" },
-      include: { homeTeam: true, awayTeam: true, sponsor: true },
-    }),
-    prisma.prediction.findMany({ where: { userId: session.id } }),
-    prisma.sponsor.findFirst({ where: { placement: "global" } }),
-    prisma.prediction.aggregate({
-      where: { userId: session.id },
-      _sum: { points: true },
-    }),
-  ]);
+  const session = await getSession();
+  if (!session || session.tenantSlug !== tenant.slug) {
+    redirect(`/${tenant.slug}/login?next=/${tenant.slug}/palpites`);
+  }
+
+  const [matches, predictions, masterSponsor, matchSponsors, totalPoints] =
+    await Promise.all([
+      prisma.match.findMany({
+        orderBy: { kickoff: "asc" },
+        include: { homeTeam: true, awayTeam: true },
+      }),
+      prisma.prediction.findMany({ where: { userId: session.id } }),
+      prisma.sponsor.findFirst({
+        where: { tenantId: tenant.id, placement: "global" },
+      }),
+      prisma.matchSponsor.findMany({
+        where: { tenantId: tenant.id },
+        include: { sponsor: true },
+      }),
+      prisma.prediction.aggregate({
+        where: { userId: session.id },
+        _sum: { points: true },
+      }),
+    ]);
 
   const predByMatch = new Map(predictions.map((p) => [p.matchId, p]));
+  const sponsorByMatch = new Map(
+    matchSponsors.map((ms) => [ms.matchId, ms.sponsor])
+  );
 
   const cards: MatchCardData[] = matches.map((m) => {
     const pred = predByMatch.get(m.id);
+    const sp = sponsorByMatch.get(m.id) ?? null;
     return {
       id: m.id,
       stage: m.stage,
@@ -47,17 +70,12 @@ export default async function PalpitesPage() {
       predHome: pred?.homeScore ?? null,
       predAway: pred?.awayScore ?? null,
       points: pred?.points ?? null,
-      sponsor: m.sponsor
-        ? {
-            name: m.sponsor.name,
-            logoUrl: m.sponsor.logoUrl,
-            linkUrl: m.sponsor.linkUrl,
-          }
+      sponsor: sp
+        ? { name: sp.name, logoUrl: sp.logoUrl, linkUrl: sp.linkUrl }
         : null,
     };
   });
 
-  // group by calendar day
   const groups = new Map<string, MatchCardData[]>();
   for (const c of cards) {
     const key = dayKey(new Date(c.kickoffISO));
@@ -69,7 +87,7 @@ export default async function PalpitesPage() {
 
   return (
     <>
-      <Nav active="/palpites" />
+      <Nav active="/palpites" tenantSlug={tenant.slug} tenantName={tenant.name} />
       <main className="mx-auto max-w-3xl px-4 py-6">
         <div className="mb-6">
           <SponsorBanner
@@ -85,7 +103,8 @@ export default async function PalpitesPage() {
               Olá, {session.name.split(" ")[0]} 👋
             </h1>
             <p className="text-sm text-slate-500">
-              {made} de {matches.length} jogos palpitados
+              {tenant.welcomeMessage ??
+                `${made} de ${matches.length} jogos palpitados`}
             </p>
           </div>
           <div className="text-right">
@@ -121,7 +140,7 @@ export default async function PalpitesPage() {
               </h2>
               <div className="space-y-4">
                 {dayCards.map((c) => (
-                  <MatchCard key={c.id} data={c} />
+                  <MatchCard key={c.id} data={c} tenantSlug={tenant.slug} />
                 ))}
               </div>
             </section>

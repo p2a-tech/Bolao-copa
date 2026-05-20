@@ -6,9 +6,9 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          DEFAULT: "#00875A",
-          dark: "#00603F",
-          light: "#27c08a",
+          DEFAULT: "rgb(var(--brand-rgb, 0 135 90) / <alpha-value>)",
+          dark: "rgb(var(--brand-dark-rgb, 0 96 63) / <alpha-value>)",
+          light: "rgb(var(--brand-light-rgb, 39 192 138) / <alpha-value>)",
         },
         gold: "#FFC400",
       },

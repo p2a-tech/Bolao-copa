@@ -1,98 +1,41 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { SponsorBanner } from "@/components/SponsorBanner";
 
-export default async function Home() {
+export default async function RootLanding() {
   const session = await getSession();
-  if (session) redirect("/palpites");
-
-  const masterSponsor = await prisma.sponsor.findFirst({
-    where: { placement: "global" },
-  });
+  if (session?.isSuperAdmin) redirect("/superadmin");
+  if (session?.tenantSlug) redirect(`/${session.tenantSlug}/palpites`);
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-brand-dark to-brand text-white">
-      <div className="mx-auto max-w-5xl px-4 py-6">
-        <div className="mb-8">
-          <SponsorBanner
-            sponsor={masterSponsor}
-            label="Patrocinador Master"
-            className="h-24"
-          />
+    <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 text-white">
+      <div className="mx-auto max-w-3xl px-4 py-16 text-center">
+        <h1 className="text-4xl font-extrabold leading-tight md:text-5xl">
+          Plataforma <span className="text-gold">whitelabel</span> de bolão
+        </h1>
+        <p className="mx-auto mt-4 max-w-xl text-lg text-white/70">
+          Crie seu próprio bolão da Copa do Mundo 2026, com sua marca, seus
+          patrocinadores e sua comunidade. Tecnologia pronta — você foca em
+          engajar.
+        </p>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <Link
+            href="/superadmin/login"
+            className="btn bg-white text-slate-900 hover:bg-slate-100"
+          >
+            Acessar painel do operador
+          </Link>
+          <Link
+            href="/demo"
+            className="btn bg-white/10 text-white ring-1 ring-white/30 hover:bg-white/20"
+          >
+            Ver bolão de demonstração
+          </Link>
         </div>
-
-        <div className="grid items-center gap-10 py-10 md:grid-cols-2">
-          <div>
-            <h1 className="text-4xl font-extrabold leading-tight md:text-5xl">
-              O Bolão da{" "}
-              <span className="text-gold">Copa do Mundo 2026</span>
-            </h1>
-            <p className="mt-4 text-lg text-white/80">
-              Dê seus palpites em todos os jogos, acompanhe o ranking ao
-              vivo e dispute com os amigos. Simples, rápido e divertido.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/register"
-                className="btn bg-gold text-slate-900 hover:brightness-95"
-              >
-                Criar minha conta
-              </Link>
-              <Link
-                href="/login"
-                className="btn bg-white/10 text-white ring-1 ring-white/30 hover:bg-white/20"
-              >
-                Já tenho conta
-              </Link>
-            </div>
-          </div>
-
-          <div className="grid gap-4">
-            <Rule
-              icon="🎯"
-              title="Placar exato = 3 pontos"
-              desc="Acertou o resultado certinho? Pontuação máxima."
-            />
-            <Rule
-              icon="✅"
-              title="Vencedor ou empate = 1 ponto"
-              desc="Acertou quem ganhou (ou o empate) sem o placar exato."
-            />
-            <Rule
-              icon="🔒"
-              title="Trava 30 min antes do jogo"
-              desc="Um contador avisa quanto tempo falta para fechar os palpites."
-            />
-            <Rule
-              icon="🏅"
-              title="Ranking ao vivo"
-              desc="Veja sua posição atualizada a cada resultado."
-            />
-          </div>
-        </div>
+        <p className="mt-10 text-sm text-white/50">
+          Cada cliente acessa em <code className="rounded bg-white/10 px-1">/seu-slug</code>.
+        </p>
       </div>
     </main>
-  );
-}
-
-function Rule({
-  icon,
-  title,
-  desc,
-}: {
-  icon: string;
-  title: string;
-  desc: string;
-}) {
-  return (
-    <div className="flex items-start gap-3 rounded-xl bg-white/10 p-4 ring-1 ring-white/15">
-      <span className="text-2xl">{icon}</span>
-      <div>
-        <p className="font-bold">{title}</p>
-        <p className="text-sm text-white/75">{desc}</p>
-      </div>
-    </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { flagEmoji } from "@/lib/flags";
+import { Flag } from "./Flag";
 
 type Sponsor = { id: string; name: string };
 
@@ -78,7 +78,7 @@ export function AdminMatchRow({
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex min-w-[170px] items-center gap-2 font-semibold">
-          <span className="text-2xl">{flagEmoji(match.home.code)}</span>
+          <Flag code={match.home.code} name={match.home.name} width={32} />
           {match.home.name}
         </div>
         <input
@@ -97,7 +97,7 @@ export function AdminMatchRow({
           className="h-10 w-14 rounded-lg border border-slate-300 text-center font-bold"
         />
         <div className="flex min-w-[170px] items-center gap-2 font-semibold">
-          <span className="text-2xl">{flagEmoji(match.away.code)}</span>
+          <Flag code={match.away.code} name={match.away.name} width={32} />
           {match.away.name}
         </div>
 

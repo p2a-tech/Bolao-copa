@@ -1,25 +1,46 @@
+import { notFound, redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getTenantBySlug } from "@/lib/tenant";
 import { Nav } from "@/components/Nav";
 import { AdminMatchRow } from "@/components/AdminMatchRow";
+import { SponsorManager } from "@/components/SponsorManager";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminPage() {
-  const session = (await getSession())!;
+export default async function AdminPage({
+  params,
+}: {
+  params: { tenant: string };
+}) {
+  const tenant = await getTenantBySlug(params.tenant);
+  if (!tenant) notFound();
 
-  const [matches, sponsors, userCount] = await Promise.all([
+  const session = await getSession();
+  if (!session || session.tenantSlug !== tenant.slug || !session.isAdmin) {
+    redirect(`/${tenant.slug}/login?next=/${tenant.slug}/admin`);
+  }
+
+  const [matches, sponsors, matchSponsors, userCount] = await Promise.all([
     prisma.match.findMany({
       orderBy: { kickoff: "asc" },
       include: { homeTeam: true, awayTeam: true },
     }),
-    prisma.sponsor.findMany({ orderBy: { name: "asc" } }),
-    prisma.user.count(),
+    prisma.sponsor.findMany({
+      where: { tenantId: tenant.id },
+      orderBy: { name: "asc" },
+    }),
+    prisma.matchSponsor.findMany({ where: { tenantId: tenant.id } }),
+    prisma.user.count({ where: { tenantId: tenant.id } }),
   ]);
+
+  const sponsorByMatch = new Map(
+    matchSponsors.map((ms) => [ms.matchId, ms.sponsorId])
+  );
 
   return (
     <>
-      <Nav active="/admin" />
+      <Nav active="/admin" tenantSlug={tenant.slug} tenantName={tenant.name} />
       <main className="mx-auto max-w-4xl px-4 py-6">
         <div className="mb-6">
           <h1 className="text-2xl font-extrabold">Painel do administrador</h1>
@@ -29,6 +50,17 @@ export default async function AdminPage() {
           </p>
         </div>
 
+        <SponsorManager
+          sponsors={sponsors.map((s) => ({
+            id: s.id,
+            name: s.name,
+            logoUrl: s.logoUrl,
+            linkUrl: s.linkUrl,
+            placement: s.placement,
+          }))}
+        />
+
+        <h2 className="mb-3 text-lg font-bold">Jogos e resultados</h2>
         <div className="space-y-3">
           {matches.map((m) => (
             <AdminMatchRow
@@ -43,7 +75,7 @@ export default async function AdminPage() {
                 homeScore: m.homeScore,
                 awayScore: m.awayScore,
                 finished: m.finished,
-                sponsorId: m.sponsorId,
+                sponsorId: sponsorByMatch.get(m.id) ?? null,
               }}
             />
           ))}

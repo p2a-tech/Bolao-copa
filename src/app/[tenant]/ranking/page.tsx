@@ -1,19 +1,37 @@
+import { notFound, redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getTenantBySlug } from "@/lib/tenant";
 import { Nav } from "@/components/Nav";
 import { SponsorBanner } from "@/components/SponsorBanner";
 
 export const dynamic = "force-dynamic";
 
-export default async function RankingPage() {
-  const session = (await getSession())!;
+export default async function RankingPage({
+  params,
+}: {
+  params: { tenant: string };
+}) {
+  const tenant = await getTenantBySlug(params.tenant);
+  if (!tenant) notFound();
+
+  const session = await getSession();
+  if (!session || session.tenantSlug !== tenant.slug) {
+    redirect(`/${tenant.slug}/login?next=/${tenant.slug}/ranking`);
+  }
 
   const [users, predictions, masterSponsor] = await Promise.all([
-    prisma.user.findMany({ select: { id: true, fullName: true } }),
+    prisma.user.findMany({
+      where: { tenantId: tenant.id },
+      select: { id: true, fullName: true },
+    }),
     prisma.prediction.findMany({
+      where: { user: { tenantId: tenant.id } },
       select: { userId: true, points: true },
     }),
-    prisma.sponsor.findFirst({ where: { placement: "global" } }),
+    prisma.sponsor.findFirst({
+      where: { tenantId: tenant.id, placement: "global" },
+    }),
   ]);
 
   const stats = new Map<
@@ -46,7 +64,7 @@ export default async function RankingPage() {
 
   return (
     <>
-      <Nav active="/ranking" />
+      <Nav active="/ranking" tenantSlug={tenant.slug} tenantName={tenant.name} />
       <main className="mx-auto max-w-3xl px-4 py-6">
         <div className="mb-6">
           <SponsorBanner

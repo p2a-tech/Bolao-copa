@@ -1,15 +1,10 @@
 /**
- * Converts an ISO 3166-1 alpha-2 country code into its emoji flag.
- * Uses Unicode regional indicator symbols, so no external image
- * assets are required and it works fully offline.
+ * Returns the flag-icons CSS class for an ISO 3166-1 alpha-2 country code.
+ * Renders a real SVG flag (bundled, works offline) consistently across
+ * browsers — unlike emoji flags, which Windows does not render.
  */
-export function flagEmoji(code: string): string {
-  const cc = code.trim().toUpperCase();
-  if (!/^[A-Z]{2}$/.test(cc)) return "🏳️";
-  const A = 0x1f1e6;
-  const offset = "A".charCodeAt(0);
-  return String.fromCodePoint(
-    A + (cc.charCodeAt(0) - offset),
-    A + (cc.charCodeAt(1) - offset)
-  );
+export function flagClass(code: string): string {
+  const cc = (code ?? "").trim().toLowerCase();
+  // alpha-2 (e.g. "br") or flag-icons subdivisions (e.g. "gb-sct", "gb-eng")
+  return /^[a-z]{2}(-[a-z]{2,3})?$/.test(cc) ? `fi fi-${cc}` : "fi";
 }

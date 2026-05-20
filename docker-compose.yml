@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: bolao
       POSTGRES_DB: bolao
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - bolao-pgdata:/var/lib/postgresql/data
     healthcheck:
