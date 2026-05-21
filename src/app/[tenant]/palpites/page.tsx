@@ -102,7 +102,7 @@ export default async function PalpitesPage({
             <h1 className="text-xl font-bold">
               Olá, {session.name.split(" ")[0]} 👋
             </h1>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-400">
               {tenant.welcomeMessage ??
                 `${made} de ${matches.length} jogos palpitados`}
             </p>
@@ -119,16 +119,16 @@ export default async function PalpitesPage({
 
         <div className="mb-6 grid grid-cols-3 gap-3 text-center text-sm">
           <div className="card p-3">
-            <div className="text-lg font-bold text-emerald-600">3 pts</div>
-            <div className="text-xs text-slate-500">placar exato</div>
+            <div className="text-lg font-bold text-emerald-400">3 pts</div>
+            <div className="text-xs text-slate-400">placar exato</div>
           </div>
           <div className="card p-3">
-            <div className="text-lg font-bold text-amber-600">1 pt</div>
-            <div className="text-xs text-slate-500">vencedor/empate</div>
+            <div className="text-lg font-bold text-amber-400">1 pt</div>
+            <div className="text-xs text-slate-400">vencedor/empate</div>
           </div>
           <div className="card p-3">
-            <div className="text-lg font-bold text-slate-500">🔒 30min</div>
-            <div className="text-xs text-slate-500">antes do jogo</div>
+            <div className="text-lg font-bold text-slate-400">🔒 30min</div>
+            <div className="text-xs text-slate-400">antes do jogo</div>
           </div>
         </div>
 

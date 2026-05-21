@@ -30,7 +30,7 @@ function GroupTable({ rows }: { rows: StandingRow[] }) {
     <div className="overflow-x-auto">
       <table className="w-full min-w-[520px] text-sm">
         <thead>
-          <tr className="border-b border-slate-200 text-left text-[11px] font-bold uppercase tracking-wide text-slate-400">
+          <tr className="border-b border-slate-800 text-left text-[11px] font-bold uppercase tracking-wide text-slate-400">
             <th className="w-8 py-2 pr-1">#</th>
             <th className="py-2">Seleção</th>
             <th className="w-9 py-2 text-center">PJ</th>
@@ -49,28 +49,28 @@ function GroupTable({ rows }: { rows: StandingRow[] }) {
             return (
               <tr
                 key={row.teamId}
-                className={`border-b border-slate-100 last:border-0 ${
-                  qualifies ? "bg-emerald-50/80" : ""
-                } ${row.isLive ? "ring-1 ring-inset ring-red-200/80" : ""}`}
+                className={`border-b border-slate-800 last:border-0 ${
+                  qualifies ? "bg-emerald-500/12" : ""
+                } ${row.isLive ? "ring-1 ring-inset ring-red-500/40" : ""}`}
               >
-                <td className="py-2.5 pr-1 font-bold text-slate-500">
+                <td className="py-2.5 pr-1 font-bold text-slate-400">
                   {i + 1}
                 </td>
                 <td className="py-2.5">
                   <div className="flex items-center gap-2">
                     <Flag code={row.code} name={row.name} width={28} />
-                    <span className="font-semibold text-slate-800">
+                    <span className="font-semibold text-slate-100">
                       {row.name}
                     </span>
                     {row.isLive && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
-                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
+                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-slate-900" />
                         Live
                       </span>
                     )}
                   </div>
                 </td>
-                <td className="py-2.5 text-center tabular-nums text-slate-600">
+                <td className="py-2.5 text-center tabular-nums text-slate-300">
                   {row.played}
                 </td>
                 <td className="py-2.5 text-center tabular-nums">{row.won}</td>
@@ -83,15 +83,15 @@ function GroupTable({ rows }: { rows: StandingRow[] }) {
                 <td
                   className={`py-2.5 text-center tabular-nums font-medium ${
                     row.gd > 0
-                      ? "text-emerald-600"
+                      ? "text-emerald-400"
                       : row.gd < 0
-                        ? "text-red-600"
-                        : "text-slate-500"
+                        ? "text-red-400"
+                        : "text-slate-400"
                   }`}
                 >
                   {row.gd > 0 ? `+${row.gd}` : row.gd}
                 </td>
-                <td className="py-2.5 text-center text-base font-extrabold tabular-nums text-brand-dark">
+                <td className="py-2.5 text-center text-base font-extrabold tabular-nums text-brand">
                   {row.points}
                 </td>
               </tr>
@@ -103,7 +103,13 @@ function GroupTable({ rows }: { rows: StandingRow[] }) {
   );
 }
 
-function GroupFixtures({ fixtures }: { fixtures: GroupFixture[] }) {
+function GroupFixtures({
+  fixtures,
+  tenantSlug,
+}: {
+  fixtures: GroupFixture[];
+  tenantSlug: string;
+}) {
   const liveOrRecent = fixtures.filter(
     (f) =>
       f.status === "live" ||
@@ -127,9 +133,9 @@ function GroupFixtures({ fixtures }: { fixtures: GroupFixture[] }) {
         return (
           <li key={f.matchId}>
             <Link
-              href={`/jogo/${f.matchId}`}
-              className={`flex items-center gap-2 rounded-lg px-2 py-2 text-sm transition hover:bg-slate-50 ${
-                isLive ? "bg-red-50 ring-1 ring-red-100" : "bg-slate-50/80"
+              href={`/${tenantSlug}/jogo/${f.matchId}`}
+              className={`flex items-center gap-2 rounded-lg px-2 py-2 text-sm transition hover:bg-slate-800 ${
+                isLive ? "bg-red-500/12 ring-1 ring-red-500/20" : "bg-white/5"
               }`}
             >
               <span className="w-12 shrink-0 text-center text-[11px] font-bold text-slate-400">
@@ -147,7 +153,7 @@ function GroupFixtures({ fixtures }: { fixtures: GroupFixture[] }) {
                 <span className="truncate">{f.away.name}</span>
               </span>
               {isLive && (
-                <span className="shrink-0 text-[10px] font-bold uppercase text-red-600">
+                <span className="shrink-0 text-[10px] font-bold uppercase text-red-400">
                   {STATUS_LABEL[f.status]}
                 </span>
               )}
@@ -159,7 +165,7 @@ function GroupFixtures({ fixtures }: { fixtures: GroupFixture[] }) {
   );
 }
 
-export function GroupStandingsView() {
+export function GroupStandingsView({ tenantSlug }: { tenantSlug: string }) {
   const [data, setData] = useState<StandingsPayload | null>(null);
   const [active, setActive] = useState("A");
   const [loading, setLoading] = useState(true);
@@ -203,7 +209,7 @@ export function GroupStandingsView() {
         <div>
           {data?.hasLive && (
             <span className="inline-flex items-center gap-2 rounded-full bg-red-600 px-3 py-1 text-xs font-bold uppercase text-white">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-white" />
+              <span className="h-2 w-2 animate-pulse rounded-full bg-slate-900" />
               Jogos ao vivo — tabela atualizando
             </span>
           )}
@@ -226,7 +232,7 @@ export function GroupStandingsView() {
             className={`shrink-0 rounded-lg px-3 py-2 text-sm font-bold transition ${
               active === g.letter
                 ? "bg-brand text-white shadow-sm"
-                : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
+                : "bg-slate-900 text-slate-300 ring-1 ring-white/10 hover:bg-slate-800"
             }`}
           >
             {g.letter}
@@ -235,11 +241,11 @@ export function GroupStandingsView() {
       </div>
 
       {loading && !data && (
-        <div className="card p-8 text-center text-slate-500">Carregando…</div>
+        <div className="card p-8 text-center text-slate-400">Carregando…</div>
       )}
 
       {error && (
-        <div className="card mb-4 border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+        <div className="card mb-4 border-amber-500/30 bg-amber-500/12 p-4 text-sm text-amber-300">
           {error}
         </div>
       )}
@@ -247,9 +253,9 @@ export function GroupStandingsView() {
       {group && (
         <div className="space-y-4">
           <section className="card overflow-hidden">
-            <div className="border-b border-slate-100 bg-slate-50 px-4 py-3">
-              <h2 className="font-bold text-slate-800">{group.label}</h2>
-              <p className="text-xs text-slate-500">
+            <div className="border-b border-slate-800 bg-white/5 px-4 py-3">
+              <h2 className="font-bold text-slate-100">{group.label}</h2>
+              <p className="text-xs text-slate-400">
                 Os dois primeiros avançam · fundo verde = zona de classificação
               </p>
             </div>
@@ -262,7 +268,7 @@ export function GroupStandingsView() {
             <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">
               Jogos do grupo
             </h3>
-            <GroupFixtures fixtures={group.fixtures} />
+            <GroupFixtures fixtures={group.fixtures} tenantSlug={tenantSlug} />
           </section>
         </div>
       )}

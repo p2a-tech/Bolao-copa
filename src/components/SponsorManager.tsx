@@ -75,7 +75,7 @@ export function SponsorManager({ sponsors }: { sponsors: Sponsor[] }) {
   return (
     <section className="card mb-8 p-5">
       <h2 className="text-lg font-bold">Patrocinadores</h2>
-      <p className="mb-4 text-sm text-slate-500">
+      <p className="mb-4 text-sm text-slate-400">
         Cadastre patrocinadores e atribua-os aos jogos na lista abaixo. O
         patrocinador <strong>global</strong> aparece como Master em todas as
         telas (apenas um é exibido).
@@ -132,17 +132,17 @@ export function SponsorManager({ sponsors }: { sponsors: Sponsor[] }) {
           <button type="submit" disabled={busy} className="btn-primary">
             {busy ? "Cadastrando..." : "Cadastrar patrocinador"}
           </button>
-          {error && <span className="text-sm text-red-600">{error}</span>}
-          {ok && <span className="text-sm text-emerald-600">{ok}</span>}
+          {error && <span className="text-sm text-red-400">{error}</span>}
+          {ok && <span className="text-sm text-emerald-400">{ok}</span>}
         </div>
       </form>
 
       {sponsors.length === 0 ? (
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-400">
           Nenhum patrocinador cadastrado ainda.
         </p>
       ) : (
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-white/10">
           {sponsors.map((s) => (
             <li
               key={s.id}
@@ -151,16 +151,16 @@ export function SponsorManager({ sponsors }: { sponsors: Sponsor[] }) {
               <img
                 src={s.logoUrl}
                 alt={s.name}
-                className="h-10 w-24 shrink-0 rounded bg-white object-contain ring-1 ring-slate-200"
+                className="h-10 w-24 shrink-0 rounded bg-slate-900 object-contain ring-1 ring-white/10"
               />
               <div className="min-w-0 flex-1">
                 <div className="truncate font-semibold">{s.name}</div>
-                <div className="flex items-center gap-2 text-xs text-slate-500">
+                <div className="flex items-center gap-2 text-xs text-slate-400">
                   <span
                     className={`rounded px-1.5 py-0.5 font-medium ${
                       s.placement === "global"
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-slate-100 text-slate-600"
+                        ? "bg-emerald-500/15 text-emerald-300"
+                        : "bg-slate-800 text-slate-300"
                     }`}
                   >
                     {s.placement === "global" ? "Global (Master)" : "Por jogo"}
@@ -179,7 +179,7 @@ export function SponsorManager({ sponsors }: { sponsors: Sponsor[] }) {
               </div>
               <button
                 onClick={() => remove(s.id, s.name)}
-                className="btn-ghost text-sm text-red-600"
+                className="btn-ghost text-sm text-red-400"
               >
                 Excluir
               </button>

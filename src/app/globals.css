@@ -3,11 +3,11 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 body {
-  @apply bg-slate-50 text-slate-800 antialiased;
+  @apply bg-slate-950 text-slate-100 antialiased;
 }
 
 @layer components {
@@ -20,17 +20,17 @@ body {
     @apply btn bg-brand text-white hover:bg-brand-dark;
   }
   .btn-ghost {
-    @apply btn bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50;
+    @apply btn bg-slate-800 text-slate-200 ring-1 ring-white/10 hover:bg-slate-700;
   }
   .input {
-    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5
-      text-slate-900 outline-none transition focus:border-brand
-      focus:ring-2 focus:ring-brand/30;
+    @apply w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2.5
+      text-slate-100 placeholder:text-slate-500 outline-none transition
+      focus:border-brand focus:ring-2 focus:ring-brand/40;
   }
   .label {
-    @apply mb-1 block text-sm font-medium text-slate-700;
+    @apply mb-1 block text-sm font-medium text-slate-300;
   }
   .card {
-    @apply rounded-xl bg-white shadow-sm ring-1 ring-slate-200;
+    @apply rounded-xl bg-slate-900 shadow-sm ring-1 ring-white/10;
   }
 }

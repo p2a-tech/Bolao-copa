@@ -18,7 +18,7 @@ export function LogoutButton({ tenantSlug }: { tenantSlug?: string }) {
     <button
       onClick={logout}
       disabled={loading}
-      className="text-sm font-medium text-slate-500 hover:text-slate-800"
+      className="text-sm font-medium text-slate-400 hover:text-slate-100"
     >
       {loading ? "Saindo..." : "Sair"}
     </button>

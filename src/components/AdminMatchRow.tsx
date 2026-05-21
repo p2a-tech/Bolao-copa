@@ -69,7 +69,7 @@ export function AdminMatchRow({
             minute: "2-digit",
           })}
           {match.finished && (
-            <span className="ml-2 rounded bg-emerald-100 px-1.5 py-0.5 font-semibold text-emerald-700">
+            <span className="ml-2 rounded bg-emerald-500/15 px-1.5 py-0.5 font-semibold text-emerald-300">
               encerrado
             </span>
           )}
@@ -86,7 +86,7 @@ export function AdminMatchRow({
           min={0}
           value={home}
           onChange={(e) => setHome(parseInt(e.target.value || "0", 10))}
-          className="h-10 w-14 rounded-lg border border-slate-300 text-center font-bold"
+          className="h-10 w-14 rounded-lg border border-slate-700 text-center font-bold"
         />
         <span className="font-bold text-slate-400">x</span>
         <input
@@ -94,7 +94,7 @@ export function AdminMatchRow({
           min={0}
           value={away}
           onChange={(e) => setAway(parseInt(e.target.value || "0", 10))}
-          className="h-10 w-14 rounded-lg border border-slate-300 text-center font-bold"
+          className="h-10 w-14 rounded-lg border border-slate-700 text-center font-bold"
         />
         <div className="flex min-w-[170px] items-center gap-2 font-semibold">
           <Flag code={match.away.code} name={match.away.name} width={32} />
@@ -108,7 +108,7 @@ export function AdminMatchRow({
         <select
           value={sponsorId}
           onChange={(e) => saveSponsor(e.target.value)}
-          className="h-10 rounded-lg border border-slate-300 px-2 text-sm"
+          className="h-10 rounded-lg border border-slate-700 px-2 text-sm"
         >
           <option value="">Sem patrocinador</option>
           {sponsors.map((s) => (
@@ -119,7 +119,7 @@ export function AdminMatchRow({
         </select>
       </div>
 
-      {msg && <p className="mt-2 text-sm text-emerald-600">{msg}</p>}
+      {msg && <p className="mt-2 text-sm text-emerald-400">{msg}</p>}
     </div>
   );
 }

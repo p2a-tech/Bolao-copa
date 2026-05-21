@@ -273,12 +273,55 @@ async function main() {
     },
   });
 
+  console.log("Criando tenant 'Bolão do Lacerda'...");
+  const lacerdaTenant = await prisma.tenant.create({
+    data: {
+      slug: "lacerda",
+      name: "Bolão do Lacerda",
+      primaryColor: "#00875A",
+      landingTitle: "O Bolão do Lacerda — Copa do Mundo 2026",
+      landingSubtitle:
+        "Palpite em todos os jogos da Copa, dispute o ranking ao vivo e concorra a prêmios com a galera que segue o @lacerdareporter.",
+      welcomeMessage:
+        "Bem-vindo ao Bolão do Lacerda! Boa sorte e bons palpites.",
+    },
+  });
+
+  console.log("Criando patrocinador master do tenant Lacerda...");
+  await prisma.sponsor.create({
+    data: {
+      tenantId: lacerdaTenant.id,
+      name: "Patrocinador Master — Bolão do Lacerda",
+      logoUrl:
+        "https://placehold.co/1200x150/00875A/FFFFFF/png?text=Patrocinador+Master",
+      linkUrl: "https://example.com",
+      placement: "global",
+    },
+  });
+
+  console.log("Criando admin do tenant Lacerda...");
+  const lacerdaAdminPass = await bcrypt.hash("admin123", 10);
+  await prisma.user.create({
+    data: {
+      tenantId: lacerdaTenant.id,
+      fullName: "Administrador do Lacerda",
+      phone: "11977776666",
+      email: "admin@lacerda.com",
+      cpf: "12345678909",
+      birthDate: new Date("1990-01-01"),
+      passwordHash: lacerdaAdminPass,
+      isAdmin: true,
+    },
+  });
+
   const total = await prisma.match.count();
   console.log(`Pronto! ${TEAMS.length} seleções e ${total} jogos criados.`);
   console.log("Super: super@bolao.com / super123 (cadastra outros clientes em /superadmin)");
   console.log("Tenant 'demo': /demo/login");
   console.log("  Admin:   admin@bolao.com / admin123");
   console.log("  Usuário: maria@exemplo.com / demo123");
+  console.log("Tenant 'lacerda': /lacerda/login");
+  console.log("  Admin:   admin@lacerda.com / admin123");
 }
 
 main()

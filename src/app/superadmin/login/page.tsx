@@ -16,9 +16,9 @@ export default async function SuperAdminLoginPage() {
         >
           Operador do SaaS
         </Link>
-        <div className="rounded-xl bg-white p-6 text-slate-800 shadow-xl ring-1 ring-slate-200">
+        <div className="rounded-xl bg-slate-900 p-6 text-slate-100 shadow-xl ring-1 ring-white/10">
           <h1 className="mb-1 text-xl font-bold">Entrar como operador</h1>
-          <p className="mb-5 text-sm text-slate-500">
+          <p className="mb-5 text-sm text-slate-400">
             Acesso exclusivo do operador da plataforma (você).
           </p>
           <LoginForm next="/superadmin" />

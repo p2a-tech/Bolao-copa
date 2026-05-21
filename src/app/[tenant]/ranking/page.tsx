@@ -79,7 +79,7 @@ export default async function RankingPage({
         <div className="card overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-400">
+              <tr className="bg-white/5 text-left text-xs uppercase tracking-wide text-slate-400">
                 <th className="px-4 py-3">#</th>
                 <th className="px-4 py-3">Participante</th>
                 <th className="px-3 py-3 text-center">Exatos</th>
@@ -93,7 +93,7 @@ export default async function RankingPage({
                 return (
                   <tr
                     key={r.id}
-                    className={`border-t border-slate-100 ${
+                    className={`border-t border-slate-800 ${
                       isMe ? "bg-brand/5 font-semibold" : ""
                     }`}
                   >
@@ -106,10 +106,10 @@ export default async function RankingPage({
                         </span>
                       )}
                     </td>
-                    <td className="px-3 py-3 text-center text-emerald-600">
+                    <td className="px-3 py-3 text-center text-emerald-400">
                       {r.exact}
                     </td>
-                    <td className="px-3 py-3 text-center text-amber-600">
+                    <td className="px-3 py-3 text-center text-amber-400">
                       {r.outcome}
                     </td>
                     <td className="px-4 py-3 text-right text-lg font-extrabold text-brand">

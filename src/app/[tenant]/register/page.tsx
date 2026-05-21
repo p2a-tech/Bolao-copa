@@ -18,17 +18,17 @@ export default async function TenantRegisterPage({
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-10">
+    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-10">
       <div className="w-full max-w-lg">
         <Link
           href={`/${tenant.slug}`}
-          className="mb-6 block text-center text-2xl font-extrabold text-brand-dark"
+          className="mb-6 block text-center text-2xl font-extrabold text-brand"
         >
           🏆 {tenant.name}
         </Link>
         <div className="card p-6">
           <h1 className="mb-1 text-xl font-bold">Criar conta</h1>
-          <p className="mb-5 text-sm text-slate-500">
+          <p className="mb-5 text-sm text-slate-400">
             Preencha seus dados para começar a palpitar.
           </p>
           <RegisterForm tenantSlug={tenant.slug} />

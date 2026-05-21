@@ -37,7 +37,7 @@ export function Countdown({
 
   if (now === null) {
     return (
-      <div className="rounded-lg bg-slate-100 px-3 py-2 text-center text-sm font-medium text-slate-400">
+      <div className="rounded-lg bg-slate-800 px-3 py-2 text-center text-sm font-medium text-slate-400">
         ⏱️ Calculando…
       </div>
     );
@@ -45,7 +45,7 @@ export function Countdown({
 
   if (now >= kickoff) {
     return (
-      <div className="rounded-lg bg-slate-100 px-3 py-2 text-center text-sm font-medium text-slate-500">
+      <div className="rounded-lg bg-slate-800 px-3 py-2 text-center text-sm font-medium text-slate-400">
         Jogo em andamento ou encerrado
       </div>
     );
@@ -53,7 +53,7 @@ export function Countdown({
 
   if (now >= lockAt) {
     return (
-      <div className="rounded-lg bg-red-50 px-3 py-2 text-center text-sm font-semibold text-red-600 ring-1 ring-red-200">
+      <div className="rounded-lg bg-red-500/12 px-3 py-2 text-center text-sm font-semibold text-red-400 ring-1 ring-red-500/30">
         🔒 Palpites encerrados para este jogo
       </div>
     );
@@ -66,8 +66,8 @@ export function Countdown({
     <div
       className={`rounded-lg px-3 py-2 text-center text-sm font-semibold ring-1 ${
         urgent
-          ? "bg-amber-50 text-amber-700 ring-amber-300 animate-pulse"
-          : "bg-emerald-50 text-emerald-700 ring-emerald-200"
+          ? "bg-amber-500/12 text-amber-300 ring-amber-300 animate-pulse"
+          : "bg-emerald-500/12 text-emerald-300 ring-emerald-200"
       }`}
     >
       ⏱️ Fecha em{" "}

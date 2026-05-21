@@ -19,17 +19,17 @@ export default async function SuperAdminPage() {
   });
 
   return (
-    <main className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
+    <main className="min-h-screen bg-white/5">
+      <header className="border-b border-slate-800 bg-slate-900">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
             <span className="text-xl">🛠️</span>
-            <span className="font-extrabold tracking-tight text-slate-900">
+            <span className="font-extrabold tracking-tight text-slate-100">
               Painel do operador
             </span>
           </div>
           <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-slate-500 sm:inline">
+            <span className="hidden text-sm text-slate-400 sm:inline">
               {session.name}
             </span>
             <LogoutButton />
@@ -39,12 +39,12 @@ export default async function SuperAdminPage() {
 
       <div className="mx-auto max-w-5xl px-4 py-6">
         <div className="mb-6">
-          <h1 className="text-2xl font-extrabold text-slate-900">
+          <h1 className="text-2xl font-extrabold text-slate-100">
             Clientes (bolões)
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-400">
             Cadastre influenciadores/marcas. Cada cliente acessa em{" "}
-            <code className="rounded bg-slate-100 px-1">/seu-slug</code> com
+            <code className="rounded bg-slate-800 px-1">/seu-slug</code> com
             sua própria comunidade, patrocinadores e marca.
           </p>
         </div>

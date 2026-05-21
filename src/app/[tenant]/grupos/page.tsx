@@ -38,17 +38,17 @@ export default async function GruposPage({
         </div>
 
         <div className="card mb-6 p-5">
-          <h1 className="text-xl font-bold text-slate-900">
+          <h1 className="text-xl font-bold text-slate-100">
             Grupos e classificação
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-slate-400">
             Tabela da fase de grupos da Copa 2026. Pontos e saldo de gols
             atualizam automaticamente a cada 20 segundos enquanto houver jogos
             ao vivo.
           </p>
         </div>
 
-        <GroupStandingsView />
+        <GroupStandingsView tenantSlug={tenant.slug} />
       </main>
     </>
   );

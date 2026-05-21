@@ -104,7 +104,7 @@ export function MatchCard({
           aria-label={`Diminuir ${label}`}
           disabled={locked}
           onClick={() => onChange(clamp(value - 1))}
-          className="h-9 w-9 rounded-full bg-slate-100 text-lg font-bold text-slate-600 hover:bg-slate-200 disabled:opacity-40"
+          className="h-9 w-9 rounded-full bg-slate-800 text-lg font-bold text-slate-300 hover:bg-slate-700 disabled:opacity-40"
         >
           –
         </button>
@@ -115,14 +115,14 @@ export function MatchCard({
           value={value}
           disabled={locked}
           onChange={(e) => onChange(clamp(parseInt(e.target.value || "0", 10)))}
-          className="h-12 w-14 rounded-lg border border-slate-300 text-center text-2xl font-bold text-slate-900 disabled:bg-slate-100"
+          className="h-12 w-14 rounded-lg border border-slate-700 text-center text-2xl font-bold text-slate-100 disabled:bg-slate-800"
         />
         <button
           type="button"
           aria-label={`Aumentar ${label}`}
           disabled={locked}
           onClick={() => onChange(clamp(value + 1))}
-          className="h-9 w-9 rounded-full bg-slate-100 text-lg font-bold text-slate-600 hover:bg-slate-200 disabled:opacity-40"
+          className="h-9 w-9 rounded-full bg-slate-800 text-lg font-bold text-slate-300 hover:bg-slate-700 disabled:opacity-40"
         >
           +
         </button>
@@ -134,7 +134,7 @@ export function MatchCard({
     <div className="card overflow-hidden">
       <Link
         href={`/${tenantSlug}/jogo/${data.id}`}
-        className="flex items-center justify-between bg-slate-50 px-4 py-2 text-xs font-medium text-slate-500 transition hover:bg-slate-100"
+        className="flex items-center justify-between bg-white/5 px-4 py-2 text-xs font-medium text-slate-400 transition hover:bg-slate-800"
       >
         <span>{data.stage}</span>
         <span>{kickoffLabel(data.kickoffISO)}</span>
@@ -152,7 +152,7 @@ export function MatchCard({
           <div className="flex flex-col items-center">
             {data.finished ? (
               <div className="text-center">
-                <div className="text-2xl font-extrabold text-slate-900">
+                <div className="text-2xl font-extrabold text-slate-100">
                   {data.realHome} <span className="text-slate-400">x</span>{" "}
                   {data.realAway}
                 </div>
@@ -190,7 +190,7 @@ export function MatchCard({
 
         <Link
           href={`/${tenantSlug}/jogo/${data.id}`}
-          className="mt-3 flex w-full items-center justify-center gap-1 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+          className="mt-3 flex w-full items-center justify-center gap-1 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-dark"
         >
           Acompanhar ao vivo →
         </Link>
@@ -199,10 +199,10 @@ export function MatchCard({
           <div
             className={`mt-3 rounded-lg px-3 py-2 text-center text-sm font-bold ${
               data.points === 3
-                ? "bg-emerald-100 text-emerald-700"
+                ? "bg-emerald-500/15 text-emerald-300"
                 : data.points === 1
-                  ? "bg-amber-100 text-amber-700"
-                  : "bg-slate-100 text-slate-500"
+                  ? "bg-amber-500/15 text-amber-300"
+                  : "bg-slate-800 text-slate-400"
             }`}
           >
             {data.predHome !== null
@@ -216,9 +216,9 @@ export function MatchCard({
             <span
               className={`text-sm ${
                 status === "error"
-                  ? "text-red-600"
+                  ? "text-red-400"
                   : status === "ok"
-                    ? "text-emerald-600"
+                    ? "text-emerald-400"
                     : "text-slate-400"
               }`}
             >
@@ -240,7 +240,7 @@ export function MatchCard({
       </div>
 
       {data.sponsor && (
-        <div className="border-t border-slate-100 px-4 py-3">
+        <div className="border-t border-slate-800 px-4 py-3">
           <SponsorBanner
             sponsor={data.sponsor}
             label="Patrocinador do jogo"

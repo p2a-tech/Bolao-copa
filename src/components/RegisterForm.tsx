@@ -140,7 +140,7 @@ export function RegisterForm({ tenantSlug }: { tenantSlug: string }) {
       </div>
 
       {error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+        <p className="rounded-lg bg-red-500/12 px-3 py-2 text-sm text-red-400">
           {error}
         </p>
       )}
@@ -149,7 +149,7 @@ export function RegisterForm({ tenantSlug }: { tenantSlug: string }) {
         {loading ? "Cadastrando..." : "Criar conta e palpitar"}
       </button>
 
-      <p className="text-center text-sm text-slate-500">
+      <p className="text-center text-sm text-slate-400">
         Já tem conta?{" "}
         <Link href={`/${tenantSlug}/login`} className="font-semibold text-brand">
           Entrar

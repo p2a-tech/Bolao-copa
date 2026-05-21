@@ -95,7 +95,7 @@ export function TenantManager({ tenants }: { tenants: Tenant[] }) {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <span className="text-sm text-slate-500">
+        <span className="text-sm text-slate-400">
           {tenants.length} cliente(s) cadastrado(s).
         </span>
         <button
@@ -109,7 +109,7 @@ export function TenantManager({ tenants }: { tenants: Tenant[] }) {
       {open && (
         <form
           onSubmit={create}
-          className="mb-8 grid grid-cols-1 gap-3 rounded-xl bg-white p-5 ring-1 ring-slate-200 sm:grid-cols-2"
+          className="mb-8 grid grid-cols-1 gap-3 rounded-xl bg-slate-900 p-5 ring-1 ring-white/10 sm:grid-cols-2"
         >
           <h3 className="sm:col-span-2 text-lg font-bold">Novo cliente</h3>
 
@@ -188,7 +188,7 @@ export function TenantManager({ tenants }: { tenants: Tenant[] }) {
             />
           </div>
 
-          <h4 className="sm:col-span-2 mt-2 text-sm font-bold uppercase tracking-wide text-slate-500">
+          <h4 className="sm:col-span-2 mt-2 text-sm font-bold uppercase tracking-wide text-slate-400">
             Conta do admin do bolão
           </h4>
           <div>
@@ -249,15 +249,15 @@ export function TenantManager({ tenants }: { tenants: Tenant[] }) {
             <button type="submit" disabled={busy} className="btn-primary">
               {busy ? "Criando..." : "Criar cliente"}
             </button>
-            {error && <span className="text-sm text-red-600">{error}</span>}
+            {error && <span className="text-sm text-red-400">{error}</span>}
           </div>
         </form>
       )}
 
       {tenants.length === 0 ? (
-        <p className="text-sm text-slate-500">Nenhum cliente cadastrado ainda.</p>
+        <p className="text-sm text-slate-400">Nenhum cliente cadastrado ainda.</p>
       ) : (
-        <ul className="divide-y divide-slate-200 rounded-xl bg-white ring-1 ring-slate-200">
+        <ul className="divide-y divide-white/10 rounded-xl bg-slate-900 ring-1 ring-white/10">
           {tenants.map((t) => (
             <li key={t.id} className="flex items-center gap-4 px-4 py-3">
               <span
@@ -266,14 +266,14 @@ export function TenantManager({ tenants }: { tenants: Tenant[] }) {
               />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-slate-900">{t.name}</span>
+                  <span className="font-semibold text-slate-100">{t.name}</span>
                   {!t.active && (
-                    <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700">
+                    <span className="rounded bg-amber-500/15 px-1.5 py-0.5 text-xs font-medium text-amber-300">
                       suspenso
                     </span>
                   )}
                 </div>
-                <div className="text-xs text-slate-500">
+                <div className="text-xs text-slate-400">
                   <Link
                     href={`/${t.slug}`}
                     target="_blank"
@@ -287,13 +287,13 @@ export function TenantManager({ tenants }: { tenants: Tenant[] }) {
               </div>
               <button
                 onClick={() => toggleActive(t.id, t.active)}
-                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50"
+                className="rounded-lg border border-slate-700 px-3 py-1.5 text-sm hover:bg-slate-800"
               >
                 {t.active ? "Suspender" : "Reativar"}
               </button>
               <button
                 onClick={() => remove(t.id, t.name)}
-                className="rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
+                className="rounded-lg border border-red-500/30 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/12"
               >
                 Excluir
               </button>

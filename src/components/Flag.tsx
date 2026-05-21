@@ -12,7 +12,7 @@ export function Flag({
   const height = Math.round((width * 3) / 4);
   return (
     <span
-      className={`${flagClass(code)} inline-block rounded-md bg-slate-100 shadow-sm ring-1 ring-black/10`}
+      className={`${flagClass(code)} inline-block rounded-md bg-slate-800 shadow-sm ring-1 ring-black/10`}
       role="img"
       aria-label={name ? `Bandeira: ${name}` : `Bandeira ${code}`}
       style={{

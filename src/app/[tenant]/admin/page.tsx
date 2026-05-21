@@ -44,7 +44,7 @@ export default async function AdminPage({
       <main className="mx-auto max-w-4xl px-4 py-6">
         <div className="mb-6">
           <h1 className="text-2xl font-extrabold">Painel do administrador</h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-400">
             {matches.length} jogos · {userCount} participantes. Lance os
             resultados para atualizar o ranking automaticamente.
           </p>
