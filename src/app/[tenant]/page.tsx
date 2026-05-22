@@ -5,6 +5,29 @@ import { prisma } from "@/lib/prisma";
 import { getTenantBySlug } from "@/lib/tenant";
 import { SponsorBanner } from "@/components/SponsorBanner";
 
+const RULES = [
+  {
+    icon: "🎯",
+    title: "Placar exato = 3 pontos",
+    desc: "Acertou o resultado certinho? Pontuação máxima.",
+  },
+  {
+    icon: "✅",
+    title: "Vencedor ou empate = 1 ponto",
+    desc: "Acertou quem ganhou (ou o empate) sem o placar exato.",
+  },
+  {
+    icon: "🔒",
+    title: "Trava 30 min antes do jogo",
+    desc: "Um contador avisa quanto tempo falta para fechar os palpites.",
+  },
+  {
+    icon: "🏅",
+    title: "Ranking ao vivo",
+    desc: "Veja sua posição atualizada a cada resultado.",
+  },
+];
+
 export default async function TenantHome({
   params,
 }: {
@@ -21,6 +44,10 @@ export default async function TenantHome({
   const masterSponsor = await prisma.sponsor.findFirst({
     where: { tenantId: tenant.id, placement: "global" },
   });
+
+  const rules = RULES.map((r) => (
+    <Rule key={r.title} icon={r.icon} title={r.title} desc={r.desc} />
+  ));
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-brand-dark to-brand text-white">
@@ -58,29 +85,25 @@ export default async function TenantHome({
             </div>
           </div>
 
-          <div className="grid gap-4">
-            <Rule
-              icon="🎯"
-              title="Placar exato = 3 pontos"
-              desc="Acertou o resultado certinho? Pontuação máxima."
-            />
-            <Rule
-              icon="✅"
-              title="Vencedor ou empate = 1 ponto"
-              desc="Acertou quem ganhou (ou o empate) sem o placar exato."
-            />
-            <Rule
-              icon="🔒"
-              title="Trava 30 min antes do jogo"
-              desc="Um contador avisa quanto tempo falta para fechar os palpites."
-            />
-            <Rule
-              icon="🏅"
-              title="Ranking ao vivo"
-              desc="Veja sua posição atualizada a cada resultado."
-            />
-          </div>
+          {tenant.logoUrl ? (
+            <div className="flex justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={tenant.logoUrl}
+                alt={tenant.name}
+                className="h-auto w-full max-w-[260px] rounded-2xl shadow-2xl ring-1 ring-white/15 md:max-w-[360px]"
+              />
+            </div>
+          ) : (
+            <div className="grid gap-4">{rules}</div>
+          )}
         </div>
+
+        {tenant.logoUrl && (
+          <div className="grid gap-4 pb-10 sm:grid-cols-2 lg:grid-cols-4">
+            {rules}
+          </div>
+        )}
       </div>
     </main>
   );

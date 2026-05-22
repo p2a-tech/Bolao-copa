@@ -279,6 +279,7 @@ async function main() {
       slug: "lacerda",
       name: "Bolão do Lacerda",
       primaryColor: "#00875A",
+      logoUrl: "/lacerda.png",
       landingTitle: "O Bolão do Lacerda — Copa do Mundo 2026",
       landingSubtitle:
         "Palpite em todos os jogos da Copa, dispute o ranking ao vivo e concorra a prêmios com a galera que segue o @lacerdareporter.",
