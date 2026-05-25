@@ -7,6 +7,7 @@ const secret = new TextEncoder().encode(
 
 const PROTECTED_TENANT_AREAS = new Set([
   "palpites",
+  "meus-palpites",
   "ranking",
   "admin",
   "grupos",

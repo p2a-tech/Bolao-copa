@@ -38,6 +38,26 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Não permite reenvio do mesmo placar para o mesmo jogo. O usuário pode
+  // editar para outro placar; só não pode "salvar" exatamente o que já está.
+  const existing = await prisma.prediction.findUnique({
+    where: { userId_matchId: { userId: session.id, matchId } },
+  });
+  if (
+    existing &&
+    existing.homeScore === homeScore &&
+    existing.awayScore === awayScore
+  ) {
+    return NextResponse.json(
+      {
+        error: `Você já deu este palpite (${homeScore} x ${awayScore}) para este jogo.`,
+        code: "DUPLICATE_PREDICTION",
+        prediction: existing,
+      },
+      { status: 409 }
+    );
+  }
+
   const prediction = await prisma.prediction.upsert({
     where: {
       userId_matchId: { userId: session.id, matchId },

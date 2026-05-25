@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { LogoutButton } from "@/components/LogoutButton";
 import { TenantManager } from "@/components/TenantManager";
+import { SuperAdminNav } from "@/components/SuperAdminNav";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +38,8 @@ export default async function SuperAdminPage() {
       </header>
 
       <div className="mx-auto max-w-5xl px-4 py-6">
+        <SuperAdminNav />
+
         <div className="mb-6">
           <h1 className="text-2xl font-extrabold text-slate-100">
             Clientes (bolões)

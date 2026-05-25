@@ -15,6 +15,11 @@ export async function Nav({
 
   const links = [
     { href: `/${tenantSlug}/palpites`, key: "/palpites", label: "Palpites" },
+    {
+      href: `/${tenantSlug}/meus-palpites`,
+      key: "/meus-palpites",
+      label: "Meus palpites",
+    },
     { href: `/${tenantSlug}/grupos`, key: "/grupos", label: "Grupos" },
     { href: `/${tenantSlug}/ranking`, key: "/ranking", label: "Ranking" },
   ];
