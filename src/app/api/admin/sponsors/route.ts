@@ -21,35 +21,50 @@ export async function POST(req: NextRequest) {
 
   const { name, logoUrl, linkUrl, placement } = parsed.data;
 
-  // Regra: só pode existir UM patrocinador Master (placement="global") por tenant.
-  if (placement === "global") {
-    const existingMaster = await prisma.sponsor.findFirst({
-      where: { tenantId: session.tenantId, placement: "global" },
-      select: { id: true, name: true },
-    });
-    if (existingMaster) {
+  // Fix BUG #6: regra "1 Master por tenant" agora roda numa transação
+  // Serializable, eliminando a race condition entre o findFirst e o
+  // create. Duas requisições simultâneas → uma vence, outra falha com 409.
+  try {
+    const sponsor = await prisma.$transaction(
+      async (tx) => {
+        if (placement === "global") {
+          const existing = await tx.sponsor.findFirst({
+            where: { tenantId: session.tenantId!, placement: "global" },
+            select: { id: true, name: true },
+          });
+          if (existing) {
+            throw Object.assign(new Error("MASTER_ALREADY_EXISTS"), {
+              existing,
+            });
+          }
+        }
+        return tx.sponsor.create({
+          data: {
+            tenantId: session.tenantId!,
+            name,
+            logoUrl,
+            linkUrl: linkUrl || null,
+            placement,
+          },
+        });
+      },
+      { isolationLevel: "Serializable" }
+    );
+    return NextResponse.json({ ok: true, sponsor });
+  } catch (err) {
+    const e = err as { message?: string; existing?: { name: string } };
+    if (e.message === "MASTER_ALREADY_EXISTS" && e.existing) {
       return NextResponse.json(
         {
-          error: `Não é possível cadastrar outro patrocinador Master porque já existe um cadastrado (${existingMaster.name}). Se quiser adicionar outro, exclua o existente.`,
+          error: `Não é possível cadastrar outro patrocinador Master porque já existe um cadastrado (${e.existing.name}). Se quiser adicionar outro, exclua o existente.`,
           code: "MASTER_ALREADY_EXISTS",
-          existing: existingMaster,
+          existing: e.existing,
         },
         { status: 409 }
       );
     }
+    throw err;
   }
-
-  const sponsor = await prisma.sponsor.create({
-    data: {
-      tenantId: session.tenantId,
-      name,
-      logoUrl,
-      linkUrl: linkUrl || null,
-      placement,
-    },
-  });
-
-  return NextResponse.json({ ok: true, sponsor });
 }
 
 const patchSchema = sponsorSchema.partial().extend({
@@ -73,7 +88,6 @@ export async function PATCH(req: NextRequest) {
 
   const { id, name, logoUrl, linkUrl, placement } = parsed.data;
 
-  // Same-tenant guard
   const current = await prisma.sponsor.findFirst({
     where: { id, tenantId: session.tenantId },
   });
@@ -81,7 +95,6 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Não encontrado." }, { status: 404 });
   }
 
-  // Regra do Master único — exclui o próprio registro da verificação.
   if (placement === "global" && current.placement !== "global") {
     const existingMaster = await prisma.sponsor.findFirst({
       where: {

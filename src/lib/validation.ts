@@ -4,7 +4,7 @@ import { z } from "zod";
 export function isValidCPF(value: string): boolean {
   const cpf = value.replace(/\D/g, "");
   if (cpf.length !== 11) return false;
-  if (/^(\d)\1{10}$/.test(cpf)) return false; // all same digits
+  if (/^(\d)\1{10}$/.test(cpf)) return false;
 
   const calcCheck = (len: number): number => {
     let sum = 0;
@@ -45,6 +45,16 @@ export function formatPhone(v: string): string {
     .replace(/(\d{5})(\d)/, "$1-$2");
 }
 
+/**
+ * Fix BUG #9: z.string().url() aceita `javascript:` e `data:` schemes,
+ * que viram XSS quando renderizados em <a href>. Esse helper exige
+ * EXPLICITAMENTE http(s).
+ */
+const isHttpUrl = (v: string) => /^https?:\/\/[^\s]+$/i.test(v);
+
+/** Aceita URL absoluta http(s) OU caminho relativo iniciando com "/". */
+const isUrlOrPath = (v: string) => v.startsWith("/") || isHttpUrl(v);
+
 export const registerSchema = z.object({
   fullName: z
     .string()
@@ -70,6 +80,12 @@ export const registerSchema = z.object({
     .transform(onlyDigits)
     .refine(isValidCPF, "CPF inválido"),
   password: z.string().min(6, "A senha deve ter ao menos 6 caracteres"),
+  photoUrl: z
+    .string()
+    .trim()
+    .refine(isUrlOrPath, "Foto inválida")
+    .optional()
+    .or(z.literal("")),
 });
 
 export const loginSchema = z.object({
@@ -83,10 +99,6 @@ export const predictionSchema = z.object({
   awayScore: z.number().int().min(0).max(99),
 });
 
-/** Aceita URL absoluta (http/https) OU caminho relativo iniciando com "/". */
-const isUrlOrPath = (v: string) =>
-  v.startsWith("/") || /^https?:\/\//i.test(v);
-
 export const sponsorSchema = z.object({
   name: z.string().trim().min(2, "Informe o nome do patrocinador"),
   logoUrl: z
@@ -97,7 +109,10 @@ export const sponsorSchema = z.object({
   linkUrl: z
     .string()
     .trim()
-    .url("Link inválido")
+    .refine(
+      (v) => v === "" || isHttpUrl(v),
+      "Link deve começar com http:// ou https:// (não aceitamos javascript: ou data:)"
+    )
     .optional()
     .or(z.literal("")),
   placement: z.enum(["global", "match"]).default("match"),

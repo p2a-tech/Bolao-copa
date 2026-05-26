@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatCPF, formatPhone } from "@/lib/validation";
+import { FigurinhaBuilder } from "./FigurinhaBuilder";
 
 export function RegisterForm({ tenantSlug }: { tenantSlug: string }) {
   const router = useRouter();
@@ -14,9 +15,11 @@ export function RegisterForm({ tenantSlug }: { tenantSlug: string }) {
     birthDate: "",
     cpf: "",
     password: "",
+    photoUrl: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [photoSavedAt, setPhotoSavedAt] = useState<number | null>(null);
 
   function set<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -47,7 +50,28 @@ export function RegisterForm({ tenantSlug }: { tenantSlug: string }) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4">
+    <form onSubmit={submit} className="space-y-6">
+      {/* === Editor de figurinha === */}
+      <section className="rounded-xl border border-slate-700 bg-slate-900/50 p-4">
+        <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-300">
+          Sua figurinha da Copa
+        </h3>
+        <FigurinhaBuilder
+          initialName={form.fullName}
+          onConfirm={(url) => {
+            set("photoUrl", url);
+            setPhotoSavedAt(Date.now());
+          }}
+        />
+        {form.photoUrl && (
+          <p className="mt-3 rounded-lg bg-emerald-500/10 px-3 py-2 text-xs text-emerald-300">
+            ✓ Figurinha salva no seu perfil
+            {photoSavedAt && " — pronto pra finalizar o cadastro."}
+          </p>
+        )}
+      </section>
+
+      {/* === Dados pessoais === */}
       <div>
         <label className="label" htmlFor="fullName">
           Nome completo
@@ -151,7 +175,10 @@ export function RegisterForm({ tenantSlug }: { tenantSlug: string }) {
 
       <p className="text-center text-sm text-slate-400">
         Já tem conta?{" "}
-        <Link href={`/${tenantSlug}/login`} className="font-semibold text-brand">
+        <Link
+          href={`/${tenantSlug}/login`}
+          className="font-semibold text-brand"
+        >
           Entrar
         </Link>
       </p>

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getTenantBySlug } from "@/lib/tenant";
 import { Nav } from "@/components/Nav";
 import { SponsorBanner } from "@/components/SponsorBanner";
+import { UserAvatar } from "@/components/UserAvatar";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ export default async function RankingPage({
   const [users, predictions, masterSponsor] = await Promise.all([
     prisma.user.findMany({
       where: { tenantId: tenant.id },
-      select: { id: true, fullName: true },
+      select: { id: true, fullName: true, photoUrl: true },
     }),
     prisma.prediction.findMany({
       where: { user: { tenantId: tenant.id } },
@@ -99,12 +100,23 @@ export default async function RankingPage({
                   >
                     <td className="px-4 py-3 text-base">{medal(i)}</td>
                     <td className="px-4 py-3">
-                      {r.fullName}
-                      {isMe && (
-                        <span className="ml-2 rounded bg-brand px-1.5 py-0.5 text-[10px] font-bold text-white">
-                          VOCÊ
-                        </span>
-                      )}
+                      <div className="flex items-center gap-3">
+                        <UserAvatar
+                          photoUrl={r.photoUrl}
+                          name={r.fullName}
+                          size="sm"
+                        />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="truncate">{r.fullName}</span>
+                            {isMe && (
+                              <span className="rounded bg-brand px-1.5 py-0.5 text-[10px] font-bold text-white">
+                                VOCÊ
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-3 py-3 text-center text-emerald-400">
                       {r.exact}

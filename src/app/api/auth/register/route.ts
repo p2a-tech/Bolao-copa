@@ -23,8 +23,16 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { fullName, phone, email, birthDate, cpf, password, tenantSlug } =
-    parsed.data;
+  const {
+    fullName,
+    phone,
+    email,
+    birthDate,
+    cpf,
+    password,
+    photoUrl,
+    tenantSlug,
+  } = parsed.data;
 
   const tenant = await prisma.tenant.findUnique({
     where: { slug: tenantSlug },
@@ -36,12 +44,18 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Fix BUG #11: a checagem de duplicata agora é POR TENANT — assim o
+  // mesmo email/CPF pode participar de bolões diferentes, mas não pode
+  // ser cadastrado duas vezes dentro do mesmo bolão.
   const existing = await prisma.user.findFirst({
-    where: { OR: [{ email }, { cpf }] },
+    where: {
+      tenantId: tenant.id,
+      OR: [{ email }, { cpf }],
+    },
   });
   if (existing) {
     return NextResponse.json(
-      { error: "Já existe uma conta com este e-mail ou CPF." },
+      { error: "Já existe uma conta com este e-mail ou CPF neste bolão." },
       { status: 409 }
     );
   }
@@ -55,6 +69,7 @@ export async function POST(req: NextRequest) {
       cpf,
       birthDate: new Date(birthDate),
       passwordHash: await hashPassword(password),
+      photoUrl: photoUrl || null,
     },
   });
 
@@ -66,6 +81,7 @@ export async function POST(req: NextRequest) {
     isSuperAdmin: false,
     tenantId: tenant.id,
     tenantSlug: tenant.slug,
+    photoUrl: user.photoUrl,
   });
   await setSessionCookie(token);
 

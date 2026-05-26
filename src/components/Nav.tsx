@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { LogoutButton } from "./LogoutButton";
+import { UserAvatar } from "./UserAvatar";
 
 export async function Nav({
   active,
@@ -59,8 +60,13 @@ export async function Nav({
             </Link>
           ))}
           {session && (
-            <div className="ml-3 flex items-center gap-3 border-l border-slate-800 pl-3">
-              <span className="hidden text-sm text-slate-400 sm:inline">
+            <div className="ml-3 flex items-center gap-2 border-l border-slate-800 pl-3">
+              <UserAvatar
+                photoUrl={session.photoUrl}
+                name={session.name}
+                size="sm"
+              />
+              <span className="hidden text-sm text-slate-200 sm:inline">
                 {session.name.split(" ")[0]}
               </span>
               <LogoutButton tenantSlug={tenantSlug} />

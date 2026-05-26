@@ -10,10 +10,28 @@ const schema = z.object({
   awayScore: z.number().int().min(0).max(99),
 });
 
+/**
+ * Fix BUGS #5 e #7 (alta severidade):
+ *
+ * Jogos (Match) são GLOBAIS (compartilhados entre todos os tenants).
+ * Antes, qualquer admin de qualquer tenant podia chamar essa rota e
+ * alterar o resultado de qualquer jogo, recalculando pontos pra todos
+ * os tenants — sabotagem cross-tenant.
+ *
+ * Agora a rota é restrita ao SUPERADMIN. Também envelopa o update do
+ * Match + recálculo das predictions na MESMA transação atômica, pra
+ * impedir estados inconsistentes se algo falhar no meio.
+ */
 export async function POST(req: NextRequest) {
   const session = await getSession();
-  if (!session?.isAdmin) {
-    return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+  if (!session?.isSuperAdmin) {
+    return NextResponse.json(
+      {
+        error:
+          "Acesso negado. Apenas o super admin pode lançar resultados (jogos são globais).",
+      },
+      { status: 403 }
+    );
   }
 
   const body = await req.json().catch(() => null);
@@ -27,31 +45,34 @@ export async function POST(req: NextRequest) {
 
   const { matchId, homeScore, awayScore } = parsed.data;
 
-  const match = await prisma.match.update({
-    where: { id: matchId },
-    data: { homeScore, awayScore, finished: true },
-  });
+  // Verifica existência antes de modificar (evita "update silencioso").
+  const existing = await prisma.match.findUnique({ where: { id: matchId } });
+  if (!existing) {
+    return NextResponse.json({ error: "Jogo não encontrado." }, { status: 404 });
+  }
 
-  // Recompute points for every prediction on this match.
+  // Atomicidade: update do jogo + recálculo de TODAS as predictions
+  // numa única transação. Se algum update de prediction falhar, tudo
+  // volta atrás.
   const predictions = await prisma.prediction.findMany({
     where: { matchId },
+    select: { id: true, homeScore: true, awayScore: true },
   });
 
-  await prisma.$transaction(
-    predictions.map((p) =>
+  const result = await prisma.$transaction([
+    prisma.match.update({
+      where: { id: matchId },
+      data: { homeScore, awayScore, finished: true },
+    }),
+    ...predictions.map((p) =>
       prisma.prediction.update({
         where: { id: p.id },
         data: {
-          points: scorePrediction(
-            p.homeScore,
-            p.awayScore,
-            homeScore,
-            awayScore
-          ),
+          points: scorePrediction(p.homeScore, p.awayScore, homeScore, awayScore),
         },
       })
-    )
-  );
+    ),
+  ]);
 
-  return NextResponse.json({ ok: true, match });
+  return NextResponse.json({ ok: true, match: result[0] });
 }

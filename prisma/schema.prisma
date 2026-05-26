@@ -26,20 +26,29 @@ model Tenant {
   matchSponsors   MatchSponsor[]
 }
 
+/// Fix BUG #11: email/cpf eram @unique GLOBAIS, impedindo que um usuário
+/// participasse de múltiplos bolões (tenants). Agora são únicos por tenant:
+/// (tenantId, email) e (tenantId, cpf). Super admins (tenantId=null) não
+/// participam dessa regra — espera-se que haja um único super admin com
+/// cada email, mas a unicidade é responsabilidade do operador.
 model User {
   id           String       @id @default(cuid())
   fullName     String
   phone        String
-  email        String       @unique
-  cpf          String       @unique
+  email        String
+  cpf          String
   birthDate    DateTime
   passwordHash String
+  photoUrl     String?      // foto do perfil (figurinha Brasil)
   isAdmin      Boolean      @default(false) // admin do tenant
   isSuperAdmin Boolean      @default(false) // dono do SaaS (sem tenant)
   tenantId     String?
   tenant       Tenant?      @relation(fields: [tenantId], references: [id], onDelete: SetNull)
   createdAt    DateTime     @default(now())
   predictions  Prediction[]
+
+  @@unique([tenantId, email])
+  @@unique([tenantId, cpf])
 }
 
 model Team {
@@ -90,7 +99,7 @@ model Sponsor {
   name      String
   logoUrl   String
   linkUrl   String?
-  placement String         @default("match") // "global" (master) | "match"
+  placement String         @default("match")
   matches   MatchSponsor[]
 }
 

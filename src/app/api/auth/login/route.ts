@@ -25,7 +25,6 @@ export async function POST(req: NextRequest) {
 
   const { email, password, tenantSlug } = parsed.data;
 
-  // Tenant login (most common) vs super-admin login (no slug).
   if (tenantSlug) {
     const tenant = await prisma.tenant.findUnique({
       where: { slug: tenantSlug },
@@ -53,6 +52,7 @@ export async function POST(req: NextRequest) {
       isSuperAdmin: false,
       tenantId: tenant.id,
       tenantSlug: tenant.slug,
+      photoUrl: user.photoUrl,
     });
     await setSessionCookie(token);
     return NextResponse.json({
@@ -80,6 +80,7 @@ export async function POST(req: NextRequest) {
     isSuperAdmin: true,
     tenantId: null,
     tenantSlug: null,
+    photoUrl: user.photoUrl,
   });
   await setSessionCookie(token);
   return NextResponse.json({ ok: true, isSuperAdmin: true });

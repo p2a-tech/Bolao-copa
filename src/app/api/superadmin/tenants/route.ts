@@ -20,7 +20,14 @@ const createSchema = z.object({
   welcomeMessage: z.string().trim().optional().or(z.literal("")),
   adminFullName: z.string().trim().min(3),
   adminEmail: z.string().trim().toLowerCase().email(),
-  adminPhone: z.string().transform(onlyDigits).refine((v) => v.length >= 10),
+  // Fix BUG #10: validar limite máximo de 11 dígitos (não só mínimo).
+  adminPhone: z
+    .string()
+    .transform(onlyDigits)
+    .refine(
+      (v) => v.length >= 10 && v.length <= 11,
+      "Telefone deve ter 10 ou 11 dígitos."
+    ),
   adminCpf: z.string().transform(onlyDigits).refine(isValidCPF, "CPF inválido"),
   adminPassword: z.string().min(6),
 });
@@ -64,8 +71,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Após BUG #11: a checagem agora é "existe admin com mesmo email/CPF
+  // EM TENANT NENHUM ainda?" — já que vamos criar um novo tenant, basta
+  // garantir que o admin não está cadastrado em nenhum tenant existente
+  // (incluindo super-admins, que tem tenantId=null).
   const dupUser = await prisma.user.findFirst({
-    where: { OR: [{ email: data.adminEmail }, { cpf: data.adminCpf }] },
+    where: {
+      OR: [{ email: data.adminEmail }, { cpf: data.adminCpf }],
+    },
   });
   if (dupUser) {
     return NextResponse.json(
@@ -113,6 +126,15 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
   }
   const { id, ...rest } = parsed.data;
+
+  const tenant = await prisma.tenant.findUnique({ where: { id } });
+  if (!tenant) {
+    return NextResponse.json(
+      { error: "Cliente não encontrado." },
+      { status: 404 }
+    );
+  }
+
   await prisma.tenant.update({ where: { id }, data: rest });
   return NextResponse.json({ ok: true });
 }
@@ -127,14 +149,32 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
   }
 
+  // Fix BUG #12: verificar existência antes de mexer; retorna 404 explícito
+  // em vez de 500 genérico.
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: parsed.data.id },
+  });
+  if (!tenant) {
+    return NextResponse.json(
+      { error: "Cliente não encontrado." },
+      { status: 404 }
+    );
+  }
+
   // Cascade delete via Prisma relations (Sponsor.tenant Cascade,
-  // MatchSponsor.tenant Cascade). User.tenant SetNull → users become orphan;
-  // delete those users too (they have no other tenant).
+  // MatchSponsor.tenant Cascade). User.tenant SetNull → o deleteMany
+  // abaixo apaga os usuários do tenant, mas NUNCA toca em super-admins
+  // (proteção contra auto-exclusão se o operador se atribuir a um tenant).
   await prisma.$transaction([
     prisma.prediction.deleteMany({
       where: { user: { tenantId: parsed.data.id } },
     }),
-    prisma.user.deleteMany({ where: { tenantId: parsed.data.id } }),
+    prisma.user.deleteMany({
+      where: {
+        tenantId: parsed.data.id,
+        isSuperAdmin: false, // Fix BUG #12: super-admin NUNCA é apagado
+      },
+    }),
     prisma.tenant.delete({ where: { id: parsed.data.id } }),
   ]);
 
