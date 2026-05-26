@@ -11,7 +11,9 @@ prisma/*.db-journal
 next-env.d.ts
 tsconfig.tsbuildinfo
 .claude/
-# hero images geradas (gpt-image-2) — pesadas; reusar via npm run images:hero
-/public/teams/
+# Hero images dos jogadores (public/teams/*.png) AGORA SÃO COMMITADAS no repo
+# para funcionarem em deploys serverless (Vercel/Netlify) onde o filesystem
+# não persiste. Regenere apenas se quiser substituir uma imagem específica:
+#   npm run images:hero[:force]
 # uploads de usuários (logos de patrocinadores etc) — específicos por instalação
 /public/uploads/
