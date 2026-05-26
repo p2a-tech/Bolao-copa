@@ -13,3 +13,5 @@ tsconfig.tsbuildinfo
 .claude/
 # hero images geradas (gpt-image-2) — pesadas; reusar via npm run images:hero
 /public/teams/
+# uploads de usuários (logos de patrocinadores etc) — específicos por instalação
+/public/uploads/

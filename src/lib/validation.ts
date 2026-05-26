@@ -83,9 +83,17 @@ export const predictionSchema = z.object({
   awayScore: z.number().int().min(0).max(99),
 });
 
+/** Aceita URL absoluta (http/https) OU caminho relativo iniciando com "/". */
+const isUrlOrPath = (v: string) =>
+  v.startsWith("/") || /^https?:\/\//i.test(v);
+
 export const sponsorSchema = z.object({
   name: z.string().trim().min(2, "Informe o nome do patrocinador"),
-  logoUrl: z.string().trim().url("URL do logo inválida"),
+  logoUrl: z
+    .string()
+    .trim()
+    .min(1, "Logo é obrigatório")
+    .refine(isUrlOrPath, "Logo inválido (envie um arquivo ou cole uma URL)"),
   linkUrl: z
     .string()
     .trim()
