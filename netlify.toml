@@ -1,0 +1,42 @@
+# Configuração de deploy do Netlify
+# Documentação: https://docs.netlify.com/configure-builds/file-based-configuration/
+
+[build]
+  command = "prisma generate && next build"
+  publish = ".next"
+
+[build.environment]
+  # Versão do Node usada no build
+  NODE_VERSION = "20"
+
+# Plugin oficial do Next.js no Netlify — converte cada rota Next em
+# Netlify Function automaticamente.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Funções: aumenta memória e timeout pras rotas de upload (processamento
+# de imagem). Outras rotas usam o default.
+[functions]
+  node_bundler = "esbuild"
+
+[functions."api/auth/upload-photo"]
+  timeout = 30
+
+[functions."api/admin/upload"]
+  timeout = 30
+
+# Redirect /uploads/* → /api/blob/* quando estiver no Netlify Blobs.
+# (sem efeito em dev local, onde os arquivos existem em /public/uploads/.)
+[[redirects]]
+  from = "/uploads/sponsors/:filename"
+  to = "/api/blob/sponsors/:filename"
+  status = 200
+  conditions = { Role = ["anonymous", "authenticated"] }
+  force = false
+
+[[redirects]]
+  from = "/uploads/users/:filename"
+  to = "/api/blob/users/:filename"
+  status = 200
+  conditions = { Role = ["anonymous", "authenticated"] }
+  force = false

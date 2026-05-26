@@ -4,36 +4,59 @@ import path from "path";
 import crypto from "crypto";
 
 /**
- * Storage abstraction:
- *  - Em produção (Vercel): usa @vercel/blob (env BLOB_READ_WRITE_TOKEN).
- *  - Em dev/local: salva em public/uploads/<folder>/<uuid>.<ext>.
+ * Storage abstraction com 3 backends, escolhidos na ordem:
+ *  1. Vercel Blob (se BLOB_READ_WRITE_TOKEN existir)
+ *  2. Netlify Blobs (se rodando no Netlify — env NETLIFY ou NETLIFY_BLOBS_CONTEXT)
+ *  3. Filesystem local (fallback dev — public/uploads/<folder>/<uuid>.<ext>)
  *
- * Motivo: Vercel é serverless e o filesystem não persiste entre invocações.
- * Em produção, qualquer arquivo gravado em /var/task seria perdido em cold
- * starts. Por isso usamos @vercel/blob (storage object externo).
+ * Em ambas as plataformas serverless (Vercel/Netlify), o filesystem não
+ * persiste entre invocações, então precisamos de storage externo.
  */
 
 const HAS_VERCEL_BLOB = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+const IS_NETLIFY =
+  Boolean(process.env.NETLIFY) || Boolean(process.env.NETLIFY_BLOBS_CONTEXT);
 
-export async function saveImage(
+type Folder = "sponsors" | "users";
+
+async function saveToVercelBlob(
   buffer: Buffer,
-  ext: string,
-  folder: "sponsors" | "users"
+  filename: string,
+  folder: Folder
 ): Promise<string> {
-  const filename = `${crypto.randomUUID()}${ext}`;
+  const { put } = await import("@vercel/blob");
+  const key = `uploads/${folder}/${filename}`;
+  const result = await put(key, buffer, {
+    access: "public",
+    addRandomSuffix: false,
+  });
+  return result.url;
+}
 
-  if (HAS_VERCEL_BLOB) {
-    // Vercel Blob — retorna URL pública absoluta
-    const { put } = await import("@vercel/blob");
-    const key = `uploads/${folder}/${filename}`;
-    const result = await put(key, buffer, {
-      access: "public",
-      addRandomSuffix: false,
-    });
-    return result.url;
-  }
+async function saveToNetlifyBlobs(
+  buffer: Buffer,
+  filename: string,
+  folder: Folder
+): Promise<string> {
+  // SDK do Netlify Blobs aceita ArrayBuffer/Uint8Array. Convertemos o
+  // Buffer (Node) para uma ArrayBuffer "pura" pra evitar erro de tipagem.
+  const { getStore } = await import("@netlify/blobs");
+  const store = getStore({ name: `uploads-${folder}` });
+  const ab = buffer.buffer.slice(
+    buffer.byteOffset,
+    buffer.byteOffset + buffer.byteLength
+  ) as ArrayBuffer;
+  await store.set(filename, ab);
+  // Netlify Blobs não expõe URLs públicas diretas — servimos via proxy:
+  // GET /api/blob/<folder>/<filename>
+  return `/api/blob/${folder}/${filename}`;
+}
 
-  // Dev local — salva no public/uploads
+async function saveToLocal(
+  buffer: Buffer,
+  filename: string,
+  folder: Folder
+): Promise<string> {
   const dir = path.join(process.cwd(), "public", "uploads", folder);
   if (!existsSync(dir)) {
     await mkdir(dir, { recursive: true });
@@ -42,4 +65,24 @@ export async function saveImage(
   return `/uploads/${folder}/${filename}`;
 }
 
-export const STORAGE_BACKEND = HAS_VERCEL_BLOB ? "vercel-blob" : "local-fs";
+export async function saveImage(
+  buffer: Buffer,
+  ext: string,
+  folder: Folder
+): Promise<string> {
+  const filename = `${crypto.randomUUID()}${ext}`;
+
+  if (HAS_VERCEL_BLOB) {
+    return saveToVercelBlob(buffer, filename, folder);
+  }
+  if (IS_NETLIFY) {
+    return saveToNetlifyBlobs(buffer, filename, folder);
+  }
+  return saveToLocal(buffer, filename, folder);
+}
+
+export const STORAGE_BACKEND = HAS_VERCEL_BLOB
+  ? "vercel-blob"
+  : IS_NETLIFY
+    ? "netlify-blobs"
+    : "local-fs";
