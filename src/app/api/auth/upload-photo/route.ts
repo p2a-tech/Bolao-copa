@@ -1,17 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { existsSync } from "fs";
-import path from "path";
-import crypto from "crypto";
+import { getSession } from "@/lib/auth";
+import { saveImage } from "@/lib/storage";
 
-const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+// Vercel: Garantir runtime Node.js (Buffer, fs, etc).
+export const runtime = "nodejs";
 
-/** Magic bytes (assinatura binária) — valida o conteúdo REAL do arquivo. */
-const MAGIC: Array<{
-  mime: string;
-  ext: string;
-  test: (buf: Buffer) => boolean;
-}> = [
+// Vercel free/hobby tier tem limite de body ~4.5MB. Mantemos 4MB de margem.
+const MAX_SIZE = 4 * 1024 * 1024;
+
+const MAGIC: Array<{ mime: string; ext: string; test: (buf: Buffer) => boolean }> = [
   {
     mime: "image/png",
     ext: ".png",
@@ -40,16 +37,12 @@ const MAGIC: Array<{
     ext: ".gif",
     test: (b) =>
       b.length >= 6 &&
-      (b.slice(0, 6).toString() === "GIF87a" ||
-        b.slice(0, 6).toString() === "GIF89a"),
+      (b.slice(0, 6).toString() === "GIF87a" || b.slice(0, 6).toString() === "GIF89a"),
   },
 ];
 
-/**
- * Rate limit grosseiro em memória — limita uploads por IP.
- * Em produção real isso deveria estar num Redis/upstash, mas pra dev
- * basta evitar que um script abuse da rota pública de cadastro.
- */
+// Rate limit em memória — em serverless cada instância tem o seu Map, então
+// o limite é "best effort". Em produção real seria Redis/Upstash.
 const RATE_WINDOW_MS = 60_000;
 const RATE_MAX_PER_WINDOW = 8;
 const rateMap = new Map<string, { count: number; resetAt: number }>();
@@ -69,11 +62,12 @@ function rateLimit(ip: string): { ok: boolean; retryAfter?: number } {
 }
 
 /**
- * Upload público de foto (usado no cadastro). Não exige sessão (o usuário
- * ainda não está logado), mas:
- *  - Fix BUG #3: valida magic bytes (não confia no Content-Type do client).
- *  - Aplica rate-limit por IP pra impedir abuso.
- *  - Limita tamanho a 5MB.
+ * Upload público de foto (usado no cadastro). Rota pública por design
+ * (usuário ainda não tem sessão), com proteções:
+ *  - Magic bytes (não confia no Content-Type do client)
+ *  - Rate-limit por IP (best-effort em serverless)
+ *  - Limite de 4MB (segurança extra pra Vercel hobby tier)
+ *  - Storage abstraído (Vercel Blob em prod, fs local em dev)
  */
 export async function POST(req: NextRequest) {
   const ip =
@@ -85,10 +79,7 @@ export async function POST(req: NextRequest) {
   if (!rl.ok) {
     return NextResponse.json(
       { error: "Muitas requisições. Aguarde alguns segundos." },
-      {
-        status: 429,
-        headers: { "Retry-After": String(rl.retryAfter ?? 30) },
-      }
+      { status: 429, headers: { "Retry-After": String(rl.retryAfter ?? 30) } }
     );
   }
 
@@ -99,48 +90,25 @@ export async function POST(req: NextRequest) {
 
   const file = formData.get("file");
   if (!(file instanceof File)) {
-    return NextResponse.json(
-      { error: "Nenhum arquivo enviado" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Nenhum arquivo enviado" }, { status: 400 });
   }
 
   if (file.size > MAX_SIZE) {
     return NextResponse.json(
-      { error: "Arquivo muito grande. Máximo 5 MB." },
+      { error: "Arquivo muito grande. Máximo 4 MB." },
       { status: 413 }
     );
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
-
-  // Valida magic bytes (não confia no MIME informado pelo client).
   const detected = MAGIC.find((m) => m.test(buffer));
   if (!detected) {
     return NextResponse.json(
-      {
-        error:
-          "O arquivo não parece ser uma imagem válida (PNG, JPG, WebP ou GIF).",
-      },
+      { error: "O arquivo não parece ser uma imagem válida (PNG, JPG, WebP ou GIF)." },
       { status: 415 }
     );
   }
 
-  const filename = `${crypto.randomUUID()}${detected.ext}`;
-  const uploadDir = path.join(
-    process.cwd(),
-    "public",
-    "uploads",
-    "users"
-  );
-  if (!existsSync(uploadDir)) {
-    await mkdir(uploadDir, { recursive: true });
-  }
-
-  await writeFile(path.join(uploadDir, filename), buffer);
-
-  return NextResponse.json({
-    ok: true,
-    url: `/uploads/users/${filename}`,
-  });
+  const url = await saveImage(buffer, detected.ext, "users");
+  return NextResponse.json({ ok: true, url });
 }

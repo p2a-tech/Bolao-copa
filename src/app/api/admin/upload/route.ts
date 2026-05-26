@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { existsSync } from "fs";
 import path from "path";
-import crypto from "crypto";
 import { getSession } from "@/lib/auth";
+import { saveImage } from "@/lib/storage";
 
-const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+export const runtime = "nodejs";
+
+const MAX_SIZE = 4 * 1024 * 1024; // 4MB (margem pro Vercel hobby)
 const ALLOWED_TYPES = new Set([
   "image/png",
   "image/jpeg",
@@ -25,9 +25,8 @@ const EXT_BY_MIME: Record<string, string> = {
 };
 
 /**
- * Upload de imagem (logo de patrocinador, etc).
- * Requer admin do tenant. Salva em `public/uploads/sponsors/` e retorna a
- * URL pública (ex.: `/uploads/sponsors/<uuid>.png`).
+ * Upload de imagem (logo de patrocinador). Requer admin do tenant.
+ * Usa storage abstraído (Vercel Blob em prod, fs local em dev).
  */
 export async function POST(req: NextRequest) {
   const session = await getSession();
@@ -42,10 +41,7 @@ export async function POST(req: NextRequest) {
 
   const file = formData.get("file");
   if (!(file instanceof File)) {
-    return NextResponse.json(
-      { error: "Nenhum arquivo enviado" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Nenhum arquivo enviado" }, { status: 400 });
   }
 
   if (!ALLOWED_TYPES.has(file.type)) {
@@ -57,30 +53,15 @@ export async function POST(req: NextRequest) {
 
   if (file.size > MAX_SIZE) {
     return NextResponse.json(
-      { error: "Arquivo muito grande. Máximo 5 MB." },
+      { error: "Arquivo muito grande. Máximo 4 MB." },
       { status: 413 }
     );
   }
 
-  const arrayBuffer = await file.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-
+  const buffer = Buffer.from(await file.arrayBuffer());
   const ext =
     EXT_BY_MIME[file.type] || path.extname(file.name).toLowerCase() || ".png";
-  const filename = `${crypto.randomUUID()}${ext}`;
 
-  const uploadDir = path.join(
-    process.cwd(),
-    "public",
-    "uploads",
-    "sponsors"
-  );
-  if (!existsSync(uploadDir)) {
-    await mkdir(uploadDir, { recursive: true });
-  }
-
-  await writeFile(path.join(uploadDir, filename), buffer);
-
-  const url = `/uploads/sponsors/${filename}`;
+  const url = await saveImage(buffer, ext, "sponsors");
   return NextResponse.json({ ok: true, url });
 }

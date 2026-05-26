@@ -3,8 +3,14 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // DATABASE_URL: pode ser uma URL "pooled" (ex.: pgBouncer/Supabase pooler/
+  // Neon pooled) — usada nas queries normais em serverless.
+  url       = env("DATABASE_URL")
+  // DIRECT_URL: conexão direta (sem pooler), necessária para migrations e
+  // outras operações que exigem prepared statements. Em dev, pode ser
+  // a mesma URL do DATABASE_URL.
+  directUrl = env("DIRECT_URL")
 }
 
 /// Cliente whitelabel (influenciador/marca). Cada Tenant tem usuários,
