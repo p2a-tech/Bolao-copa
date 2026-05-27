@@ -14,7 +14,10 @@
     "setup": "prisma generate && prisma db push && tsx prisma/seed.ts",
     "images:hero": "tsx scripts/generate-hero-images.ts",
     "images:hero:force": "tsx scripts/generate-hero-images.ts --force",
-    "images:hero:cutout": "tsx scripts/cutout-hero-images.ts"
+    "images:hero:cutout": "tsx scripts/cutout-hero-images.ts",
+    "live:check": "node scripts/check-api-football.mjs",
+    "live:map": "node scripts/map-api-football-fixtures.mjs",
+    "live:sync": "node scripts/sync-wc2026-results.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

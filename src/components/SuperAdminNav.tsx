@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const TABS = [
   { href: "/superadmin", label: "Clientes" },
   { href: "/superadmin/dashboard", label: "Estatísticas" },
+  { href: "/superadmin/ao-vivo", label: "Ao vivo" },
 ];
 
 export function SuperAdminNav() {

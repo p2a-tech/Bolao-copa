@@ -9,8 +9,8 @@ import crypto from "crypto";
  *  2. Netlify Blobs (se rodando no Netlify — env NETLIFY ou NETLIFY_BLOBS_CONTEXT)
  *  3. Filesystem local (fallback dev — public/uploads/<folder>/<uuid>.<ext>)
  *
- * Em ambas as plataformas serverless (Vercel/Netlify), o filesystem não
- * persiste entre invocações, então precisamos de storage externo.
+ * Os imports dinâmicos são opcionais — se a lib não estiver instalada,
+ * o backend cai pro local sem quebrar (útil pra dev sem rodar npm install).
  */
 
 const HAS_VERCEL_BLOB = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
@@ -24,9 +24,11 @@ async function saveToVercelBlob(
   filename: string,
   folder: Folder
 ): Promise<string> {
-  const { put } = await import("@vercel/blob");
+  // @vercel/blob é peer dep opcional — se faltar, deixa o erro borbulhar
+  // (sinal claro pro operador que precisa instalar/configurar).
+  const mod = await import("@vercel/blob");
   const key = `uploads/${folder}/${filename}`;
-  const result = await put(key, buffer, {
+  const result = await mod.put(key, buffer, {
     access: "public",
     addRandomSuffix: false,
   });
@@ -38,17 +40,13 @@ async function saveToNetlifyBlobs(
   filename: string,
   folder: Folder
 ): Promise<string> {
-  // SDK do Netlify Blobs aceita ArrayBuffer/Uint8Array. Convertemos o
-  // Buffer (Node) para uma ArrayBuffer "pura" pra evitar erro de tipagem.
-  const { getStore } = await import("@netlify/blobs");
-  const store = getStore({ name: `uploads-${folder}` });
+  const mod = await import("@netlify/blobs");
+  const store = mod.getStore({ name: `uploads-${folder}` });
   const ab = buffer.buffer.slice(
     buffer.byteOffset,
     buffer.byteOffset + buffer.byteLength
   ) as ArrayBuffer;
   await store.set(filename, ab);
-  // Netlify Blobs não expõe URLs públicas diretas — servimos via proxy:
-  // GET /api/blob/<folder>/<filename>
   return `/api/blob/${folder}/${filename}`;
 }
 
@@ -72,12 +70,32 @@ export async function saveImage(
 ): Promise<string> {
   const filename = `${crypto.randomUUID()}${ext}`;
 
+  // Tenta Vercel Blob → se a lib não estiver instalada, cai pro local.
   if (HAS_VERCEL_BLOB) {
-    return saveToVercelBlob(buffer, filename, folder);
+    try {
+      return await saveToVercelBlob(buffer, filename, folder);
+    } catch (err) {
+      console.warn(
+        "[storage] Vercel Blob indisponível, usando filesystem local:",
+        (err as Error).message
+      );
+      return saveToLocal(buffer, filename, folder);
+    }
   }
+
+  // Tenta Netlify Blobs → se a lib não estiver instalada, cai pro local.
   if (IS_NETLIFY) {
-    return saveToNetlifyBlobs(buffer, filename, folder);
+    try {
+      return await saveToNetlifyBlobs(buffer, filename, folder);
+    } catch (err) {
+      console.warn(
+        "[storage] Netlify Blobs indisponível, usando filesystem local:",
+        (err as Error).message
+      );
+      return saveToLocal(buffer, filename, folder);
+    }
   }
+
   return saveToLocal(buffer, filename, folder);
 }
 

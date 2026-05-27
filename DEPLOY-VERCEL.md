@@ -46,9 +46,23 @@ Vá em **Project Settings → Environment Variables** e adicione:
 | `DIRECT_URL` | URL **direct** do Neon | Production |
 | `JWT_SECRET` | gere com `openssl rand -base64 48` | Production |
 | `BLOB_READ_WRITE_TOKEN` | (gerado automaticamente quando você cria o Blob) | Production |
-| `LIVE_PROVIDER` | `demo` (ou `api-football` se tiver chave) | Production |
+| `LIVE_PROVIDER` | `api-football` (ou `demo` pra simulação) | Production |
+| `API_FOOTBALL_KEY` | chave do api-football.com | Production (se `LIVE_PROVIDER=api-football`) |
 
 **⚠️ Atenção crítica**: `JWT_SECRET` é OBRIGATÓRIO. O app **não inicia em produção** sem essa variável (proteção contra deploy com secret default).
+
+### Sincronizar fixtures da Copa 2026 (dados reais)
+
+Depois que o banco do Neon estiver populado, rode localmente apontando pro Neon pra mapear os 72 jogos da fase de grupos com os IDs reais da API-Football:
+
+```powershell
+# Com o .env apontando pro Neon e API_FOOTBALL_KEY setada:
+npm run live:check    # diagnostico (cota, mapeamentos, proximos jogos)
+npm run live:map      # mapeia cada Match -> fixture id real + atualiza kickoff/venue
+npm run live:sync     # puxa placares dos jogos finalizados e recalcula pontos
+```
+
+`live:map` roda uma vez (ou quando o sorteio mudar). `live:sync` deve rodar periodicamente — recomendado configurar como [Vercel Cron Job](https://vercel.com/docs/cron-jobs) (ex.: a cada 5 min durante a Copa).
 
 ---
 

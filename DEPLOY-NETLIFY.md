@@ -40,10 +40,22 @@ No dashboard do site (Site settings → **Environment variables**):
 | `DATABASE_URL` | URL **pooled** do Neon | obrigatório |
 | `DIRECT_URL` | URL **direct** do Neon | obrigatório |
 | `JWT_SECRET` | `openssl rand -base64 48` | obrigatório — app não inicia sem |
-| `LIVE_PROVIDER` | `demo` | opcional |
-| `API_FOOTBALL_KEY` | sua chave | opcional, se `LIVE_PROVIDER=api-football` |
+| `LIVE_PROVIDER` | `api-football` ou `demo` | opcional (default `demo`) |
+| `API_FOOTBALL_KEY` | chave do api-football.com | obrigatório se `LIVE_PROVIDER=api-football` |
 
 **⚠️ Crítico**: sem `JWT_SECRET` o build falha em runtime (fail-fast intencional).
+
+### Sincronizar fixtures da Copa 2026 (dados reais)
+
+Depois que o schema estiver aplicado, rode localmente apontando pro Neon pra puxar os jogos reais da Copa 2026:
+
+```bash
+npm run live:check    # diagnostico (cota da API, mapeamentos, proximos jogos)
+npm run live:map      # mapeia cada Match -> fixture id real + atualiza kickoff/venue da API
+npm run live:sync     # puxa placares dos jogos finalizados e recalcula pontos dos palpites
+```
+
+Pra automatizar o `live:sync` durante a Copa, use [Netlify Scheduled Functions](https://docs.netlify.com/functions/scheduled-functions/) (cada 5 min é razoável).
 
 ---
 
