@@ -374,7 +374,11 @@ export function MatchLiveView({
             </div>
           ) : (
             <p className="text-center text-sm text-slate-400">
-              As estatísticas aparecem quando o jogo começa.
+              {live.status === "scheduled"
+                ? "As estatísticas aparecem quando o jogo começa."
+                : live.provider === "demo"
+                  ? "Modo demonstração — sem estatísticas reais."
+                  : "Estatísticas indisponíveis para esta partida."}
             </p>
           )}
         </div>
@@ -428,6 +432,7 @@ export function MatchLiveView({
             className="h-20"
           />
         </div>
+
 
         <p className="mt-5 text-center text-[11px] text-slate-500">
           Atualiza automaticamente a cada 20s ·{" "}
