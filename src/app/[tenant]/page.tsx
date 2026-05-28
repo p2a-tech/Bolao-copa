@@ -23,7 +23,10 @@ export default async function TenantHome({
   });
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main
+      className="min-h-screen text-white"
+      style={{ backgroundColor: tenant.primaryColor }}
+    >
       <div className="mx-auto max-w-5xl px-4 py-6">
         <div className="mb-8">
           <SponsorBanner
