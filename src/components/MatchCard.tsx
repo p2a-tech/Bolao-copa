@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Countdown } from "./Countdown";
 import { SponsorBanner } from "./SponsorBanner";
 import { Flag } from "./Flag";
@@ -41,6 +42,7 @@ export function MatchCard({
   data: MatchCardData;
   tenantSlug: string;
 }) {
+  const router = useRouter();
   const kickoff = new Date(data.kickoffISO).getTime();
   const lockAt = kickoff - LOCK_MINUTES * 60 * 1000;
   const locked = data.finished || Date.now() >= lockAt;
@@ -81,6 +83,7 @@ export function MatchCard({
       setStatus("ok");
       setSaved(true);
       setMessage("Palpite salvo!");
+      router.refresh();
       setTimeout(() => setStatus("idle"), 2500);
     } catch {
       setStatus("error");
