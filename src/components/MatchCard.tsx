@@ -232,11 +232,7 @@ export function MatchCard({
               disabled={status === "saving"}
               className="btn-primary"
             >
-              {status === "saving"
-                ? "Salvando..."
-                : saved
-                  ? "Atualizar"
-                  : "Salvar palpite"}
+              {status === "saving" ? "Salvando..." : "Salvar palpite"}
             </button>
           </div>
         )}
