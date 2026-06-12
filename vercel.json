@@ -11,6 +11,15 @@
     "src/app/api/admin/upload/route.ts": {
       "memory": 1024,
       "maxDuration": 30
+    },
+    "src/app/api/cron/sync-results/route.ts": {
+      "maxDuration": 60
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/sync-results",
+      "schedule": "*/10 * * * *"
+    }
+  ]
 }
