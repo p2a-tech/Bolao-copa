@@ -17,7 +17,11 @@ export default async function AdminPage({
   if (!tenant) notFound();
 
   const session = await getSession();
-  if (!session || session.tenantSlug !== tenant.slug || !session.isAdmin) {
+  // O superadmin (dono da plataforma) pode acessar o admin de qualquer tenant
+  // — é ele quem lança os resultados, que são globais. O admin de tenant só
+  // entra no admin do próprio tenant.
+  const isTenantAdmin = !!session?.isAdmin && session.tenantSlug === tenant.slug;
+  if (!session || (!session.isSuperAdmin && !isTenantAdmin)) {
     redirect(`/${tenant.slug}/login?next=/${tenant.slug}/admin`);
   }
 
@@ -65,6 +69,7 @@ export default async function AdminPage({
           {matches.map((m) => (
             <AdminMatchRow
               key={m.id}
+              canEditResult={session.isSuperAdmin}
               sponsors={sponsors.map((s) => ({ id: s.id, name: s.name }))}
               match={{
                 id: m.id,

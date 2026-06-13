@@ -9,6 +9,7 @@ type Sponsor = { id: string; name: string };
 export function AdminMatchRow({
   match,
   sponsors,
+  canEditResult,
 }: {
   match: {
     id: string;
@@ -22,6 +23,8 @@ export function AdminMatchRow({
     sponsorId: string | null;
   };
   sponsors: Sponsor[];
+  /** Só o superadmin lança resultado (jogos são globais). */
+  canEditResult: boolean;
 }) {
   const router = useRouter();
   const [home, setHome] = useState<number>(match.homeScore ?? 0);
@@ -81,29 +84,43 @@ export function AdminMatchRow({
           <Flag code={match.home.code} name={match.home.name} width={32} />
           {match.home.name}
         </div>
-        <input
-          type="number"
-          min={0}
-          value={home}
-          onChange={(e) => setHome(parseInt(e.target.value || "0", 10))}
-          className="h-10 w-14 rounded-lg border border-slate-700 text-center font-bold"
-        />
+        {canEditResult ? (
+          <input
+            type="number"
+            min={0}
+            value={home}
+            onChange={(e) => setHome(parseInt(e.target.value || "0", 10))}
+            className="h-10 w-14 rounded-lg border border-slate-700 text-center font-bold"
+          />
+        ) : (
+          <span className="w-14 text-center text-lg font-bold">
+            {match.homeScore ?? "–"}
+          </span>
+        )}
         <span className="font-bold text-slate-400">x</span>
-        <input
-          type="number"
-          min={0}
-          value={away}
-          onChange={(e) => setAway(parseInt(e.target.value || "0", 10))}
-          className="h-10 w-14 rounded-lg border border-slate-700 text-center font-bold"
-        />
+        {canEditResult ? (
+          <input
+            type="number"
+            min={0}
+            value={away}
+            onChange={(e) => setAway(parseInt(e.target.value || "0", 10))}
+            className="h-10 w-14 rounded-lg border border-slate-700 text-center font-bold"
+          />
+        ) : (
+          <span className="w-14 text-center text-lg font-bold">
+            {match.awayScore ?? "–"}
+          </span>
+        )}
         <div className="flex min-w-[170px] items-center gap-2 font-semibold">
           <Flag code={match.away.code} name={match.away.name} width={32} />
           {match.away.name}
         </div>
 
-        <button onClick={saveResult} disabled={busy} className="btn-primary">
-          {busy ? "Salvando..." : "Salvar resultado"}
-        </button>
+        {canEditResult && (
+          <button onClick={saveResult} disabled={busy} className="btn-primary">
+            {busy ? "Salvando..." : "Salvar resultado"}
+          </button>
+        )}
 
         <select
           value={sponsorId}
@@ -119,6 +136,12 @@ export function AdminMatchRow({
         </select>
       </div>
 
+      {!canEditResult && (
+        <p className="mt-2 text-xs text-slate-500">
+          O resultado é lançado automaticamente / pelo administrador da
+          plataforma.
+        </p>
+      )}
       {msg && <p className="mt-2 text-sm text-emerald-400">{msg}</p>}
     </div>
   );
