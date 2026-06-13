@@ -22,6 +22,7 @@ function fixtureStatusLabel(f: GroupFixture): string {
   return new Date(f.kickoffISO).toLocaleTimeString("pt-BR", {
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "America/Sao_Paulo",
   });
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Countdown } from "./Countdown";
@@ -26,12 +26,15 @@ export type MatchCardData = {
 const LOCK_MINUTES = 30;
 
 function kickoffLabel(iso: string) {
+  // timeZone fixo: sem ele o servidor (UTC na Vercel) e o navegador (horário
+  // de Brasília) formatam strings diferentes -> hydration mismatch (React #425).
   return new Date(iso).toLocaleString("pt-BR", {
     weekday: "short",
     day: "2-digit",
     month: "short",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "America/Sao_Paulo",
   });
 }
 
@@ -45,7 +48,15 @@ export function MatchCard({
   const router = useRouter();
   const kickoff = new Date(data.kickoffISO).getTime();
   const lockAt = kickoff - LOCK_MINUTES * 60 * 1000;
-  const locked = data.finished || Date.now() >= lockAt;
+
+  // Date.now() no render é não-determinístico entre server e client. Começa
+  // null (server e 1º render do client iguais) e só calcula o lock após mount,
+  // evitando hydration mismatch (React #418/#425).
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => {
+    setNow(Date.now());
+  }, []);
+  const locked = data.finished || (now !== null && now >= lockAt);
 
   const [home, setHome] = useState<number>(data.predHome ?? 0);
   const [away, setAway] = useState<number>(data.predAway ?? 0);

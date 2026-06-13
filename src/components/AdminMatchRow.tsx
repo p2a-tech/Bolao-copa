@@ -70,6 +70,7 @@ export function AdminMatchRow({
             month: "short",
             hour: "2-digit",
             minute: "2-digit",
+            timeZone: "America/Sao_Paulo",
           })}
           {match.finished && (
             <span className="ml-2 rounded bg-emerald-500/15 px-1.5 py-0.5 font-semibold text-emerald-300">

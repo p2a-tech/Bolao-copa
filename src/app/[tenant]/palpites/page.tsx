@@ -13,6 +13,7 @@ function dayKey(d: Date) {
     weekday: "long",
     day: "2-digit",
     month: "long",
+    timeZone: "America/Sao_Paulo",
   });
 }
 
